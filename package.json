@@ -1,0 +1,13 @@
+{
+  "name": "platter",
+  "version": "0.0.0",
+  "description": "Dashboard for Cucumber test results",
+  "scripts": {
+    "watch": "riot -w src/ build/tags.js",
+    "build": "riot src/ build/tags.js"
+  },
+  "devDependencies": {
+    "elasticsearch": "^4.0.2",
+    "riot": "^2.0.14"
+  }
+}
