@@ -1,21 +1,11 @@
 <pl-builds>
-	<ul class="builds">
-		<li each={ builds }><a href="#builds/{ _id }">Build { build_number }</a></li>
+	<ul class="builds nav nav-pills">
+		<li each={ builds } role="presentation" class={ active: parent.currentBuildId == _id }>
+			<a href="#builds/{ _id }">Build { build_number }</a>
+		</li>
 	</ul>
 
 	<script>
-		var self = this,
-				app = opts,
-				limit = opts.limit || 5;
-
-		self.builds = [];
-
-		self.on('mount', app.loadBuilds);
-
-		app.subscribe(self, {
-			'load-builds': function (builds) {
-				self.update({ builds: builds });
-			}
-		});
+		this.builds = [];
 	</script>
 </pl-builds>

@@ -7,7 +7,6 @@
     "build": "riot src/ build/tags.js"
   },
   "devDependencies": {
-    "elasticsearch": "^4.0.2",
-    "riot": "^2.0.14"
+    "riot": "2.0.14"
   }
 }
