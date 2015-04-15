@@ -69,6 +69,34 @@
 		var self = {},
 				db = Platter.Database(dbURL);
 
+		self.compileUserFilter = function (ufilter) {
+			var esfilter = { must: [], should: [] };
+
+			if (ufilter) {
+				for (var i = 0; i < ufilter.length; i++) {
+					for (var k in ufilter[i]) {
+						var val = ufilter[i][k];
+
+						switch (k) {
+							case 'tag':
+								esfilter.should.push({ term: { 'tags.name': val } });
+								break;
+							case 'status':
+								esfilter.must.push({
+									nested: {
+										path: 'elements.steps',
+										filter: { term: { 'elements.steps.result.status': val } }
+									}
+								});
+								break;
+						}
+					}
+				}
+			}
+
+			return esfilter;
+		};
+
 		self.loadBuild = function (id) {
 			if (id == 'latest') {
 				self.loadLatestBuild();
@@ -81,26 +109,26 @@
 		};
 
 		self.loadBuilds = function (limit) {
-			db.search('build', {
-				sort: [ { _timestamp: { order: 'desc' } } ]
-			})
-			.done(function (data) {
+			db.search('build', { sort: [ { _timestamp: { order: 'desc' } } ] }).done(function (data) {
 				if (data.hits.hits.length > 0) {
 					self.trigger('load-builds', db.sourcesOf(data.hits.hits));
 				}
 			});
 		};
 
-		self.loadFeatures = function (buildId) {
-			db.search('feature', {
-				query: {
-					has_parent: {
-						type: 'build', query: { match: { _id: buildId } }
-					}
-				}
-			})
-			.done(function (data) {
-				self.trigger('load-build-features', buildId, db.sourcesOf(data.hits.hits));
+		self.loadFeatures = function (buildId, ufilter) {
+			var filter = self.compileUserFilter(ufilter);
+			filter.must.push({ has_parent: { type: 'build', filter: { term: { _id: buildId } } } });
+
+			if (filter.should.length === 0) {
+				delete filter.should;
+			}
+
+			db.search('feature', { filter: { bool: filter } }).done(function (data) {
+				var features = db.sourcesOf(data.hits.hits);
+
+				self.postFilterScenarios(features, ufilter);
+				self.trigger('load-build-features', buildId, features);
 			});
 		};
 
@@ -117,8 +145,69 @@
 			});
 		};
 
+		self.matchesFilter = function (element, ufilter) {
+			var index = { tag: [], status: 'passed' },
+					filters = [],
+					matches = {},
+					match = true;
+
+			if (!ufilter || element.type === 'background') {
+				return true;
+			}
+
+			for (var i = 0; i < ufilter.length; i++) {
+				for (var k in ufilter[i]) {
+					filters.push(k);
+				}
+			}
+
+			if (element.name.match(/advanced setting/i)) debugger;
+
+			for (var i = 0; i < element.steps.length; i++) {
+				var step = element.steps[i];
+
+				if (index.status !== 'failed' && step.result.status !== index.status) {
+					index.status = step.result.status;
+				}
+
+				for (var j = 0; step.tags && j < step.tags.length; j++) {
+					index.tag.push(step.tags[j].name);
+				}
+			}
+
+			for (var k in index) {
+				matches[k] = filters.indexOf(k) === -1;
+			}
+
+			for (var i = 0; i < ufilter.length; i++) {
+				for (var k in ufilter[i]) {
+					if (typeof index[k] !== undefined) {
+						var val = ufilter[i][k];
+
+						if (index[k] === val || index[k].indexOf(val) > -1) {
+							matches[k] = true;
+						}
+					}
+				}
+			}
+
+			for (var k in matches) {
+				match = match && matches[k];
+			}
+
+			return match;
+		};
+
 		self.mount = function (selector) {
 			riot.mount(selector, 'pl-dashboard', self);
+		};
+
+		self.postFilterScenarios = function (features, ufilter) {
+			for (var i = 0; i < features.length; i++) {
+				features[i].elements = features[i].elements.filter(function (element) {
+					return self.matchesFilter(element, ufilter);
+				});
+			}
 		};
 
 		self.route = function (collection, id) {
