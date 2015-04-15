@@ -1,0 +1,506 @@
+{
+  "keyword": "Feature",
+  "name": "VisualEditor Options",
+  "line": 2,
+  "description": "",
+  "tags": [
+    { "name": "@en.wikipedia.beta.wmflabs.org", "line": 1 },
+    { "name": "@firefox", "line": 1 },
+    { "name": "@internet_explorer_10", "line": 1 },
+    { "name": "@safari", "line": 1 },
+    { "name": "@test2.wikipedia.org", "line": 1 }
+  ],
+  "id": "visualeditor-options",
+  "uri": "features/options.feature",
+  "elements": [
+    {
+      "keyword": "Background",
+      "name": "",
+      "line": 4,
+      "description": "",
+      "type": "background",
+      "steps": [
+        {
+          "keyword": "Given ",
+          "name": "I go to the \"Options VisualEditor Test\" page with content \"Options VisualEditor Test\"",
+          "line": 5,
+          "match": {
+            "arguments": [
+              { "offset": 13, "val": "Options VisualEditor Test" },
+              { "offset": 59, "val": "Options VisualEditor Test" }
+            ],
+            "location": "features/step_definitions/shared_steps.rb:17"
+          },
+          "result": { "status": "passed", "duration": 13995618000 }
+        },
+        {
+          "keyword": "And ",
+          "name": "I click in the editable part",
+          "line": 6,
+          "match": { "location": "features/step_definitions/shared_steps.rb:6" },
+          "result": { "status": "passed", "duration": 1297954000 }
+        },
+        {
+          "keyword": "And ",
+          "name": "I click the hamburger menu",
+          "line": 7,
+          "match": { "location": "features/step_definitions/options_steps.rb:41" },
+          "result": { "status": "passed", "duration": 2081309000 }
+        }
+      ]
+    },
+    {
+      "keyword": "Scenario",
+      "name": "Options",
+      "line": 9,
+      "description": "",
+      "id": "visualeditor-options;options",
+      "type": "scenario",
+      "steps": [
+        {
+          "keyword": "Given ",
+          "name": "I go to the \"Options VisualEditor Test\" page with content \"Options VisualEditor Test\"",
+          "line": 5,
+          "match": {
+            "arguments": [
+              { "offset": 13, "val": "Options VisualEditor Test" },
+              { "offset": 59, "val": "Options VisualEditor Test" }
+            ],
+            "location": "features/step_definitions/shared_steps.rb:17"
+          },
+          "result": { "status": "passed", "duration": 248999 }
+        },
+        {
+          "keyword": "And ",
+          "name": "I click in the editable part",
+          "line": 6,
+          "match": { "location": "features/step_definitions/shared_steps.rb:6" },
+          "result": { "status": "passed", "duration": 207000 }
+        },
+        {
+          "keyword": "And ",
+          "name": "I click the hamburger menu",
+          "line": 7,
+          "match": { "location": "features/step_definitions/options_steps.rb:41" },
+          "result": { "status": "passed", "duration": 216000 }
+        },
+        {
+          "keyword": "When ",
+          "name": "I click Options",
+          "line": 10,
+          "match": { "location": "features/step_definitions/options_steps.rb:33" },
+          "result": { "status": "passed", "duration": 1459172000 }
+        },
+        {
+          "keyword": "Then ",
+          "name": "I should see the options overlay",
+          "line": 11,
+          "match": { "location": "features/step_definitions/options_steps.rb:69" },
+          "result": { "status": "passed", "duration": 1625016000 }
+        }
+      ]
+    },
+    {
+      "keyword": "Scenario",
+      "name": "Advanced Settings",
+      "line": 13,
+      "description": "",
+      "id": "visualeditor-options;advanced-settings",
+      "type": "scenario",
+      "steps": [
+        {
+          "keyword": "Given ",
+          "name": "I go to the \"Options VisualEditor Test\" page with content \"Options VisualEditor Test\"",
+          "line": 5,
+          "match": {
+            "arguments": [
+              { "offset": 13, "val": "Options VisualEditor Test" },
+              { "offset": 59, "val": "Options VisualEditor Test" }
+            ],
+            "location": "features/step_definitions/shared_steps.rb:17"
+          },
+          "result": { "status": "passed", "duration": 14652534000 }
+        },
+        {
+          "keyword": "And ",
+          "name": "I click in the editable part",
+          "line": 6,
+          "match": { "location": "features/step_definitions/shared_steps.rb:6" },
+          "result": { "status": "passed", "duration": 1336753000 }
+        },
+        {
+          "keyword": "And ",
+          "name": "I click the hamburger menu",
+          "line": 7,
+          "match": { "location": "features/step_definitions/options_steps.rb:41" },
+          "result": { "status": "passed", "duration": 1977429000 }
+        },
+        {
+          "keyword": "When ",
+          "name": "I click Advanced Settings",
+          "line": 14,
+          "match": { "location": "features/step_definitions/options_steps.rb:21" },
+          "result": { "status": "passed", "duration": 1445250000 }
+        },
+        {
+          "keyword": "Then ",
+          "name": "I should see the options overlay",
+          "line": 15,
+          "match": { "location": "features/step_definitions/options_steps.rb:69" },
+          "result": { "status": "passed", "duration": 1541360000 }
+        },
+        {
+          "keyword": "And ",
+          "name": "the options overlay should display Advanced Settings",
+          "line": 16,
+          "match": { "location": "features/step_definitions/options_steps.rb:73" },
+          "result": { "status": "passed", "duration": 1258035000 }
+        }
+      ]
+    },
+    {
+      "keyword": "Scenario",
+      "name": "Page Settings",
+      "line": 18,
+      "description": "",
+      "id": "visualeditor-options;page-settings",
+      "type": "scenario",
+      "steps": [
+        {
+          "keyword": "Given ",
+          "name": "I go to the \"Options VisualEditor Test\" page with content \"Options VisualEditor Test\"",
+          "line": 5,
+          "match": {
+            "arguments": [
+              { "offset": 13, "val": "Options VisualEditor Test" },
+              { "offset": 59, "val": "Options VisualEditor Test" }
+            ],
+            "location": "features/step_definitions/shared_steps.rb:17"
+          },
+          "result": { "status": "passed", "duration": 13775548000 }
+        },
+        {
+          "keyword": "And ",
+          "name": "I click in the editable part",
+          "line": 6,
+          "match": { "location": "features/step_definitions/shared_steps.rb:6" },
+          "result": { "status": "passed", "duration": 1312728000 }
+        },
+        {
+          "keyword": "And ",
+          "name": "I click the hamburger menu",
+          "line": 7,
+          "match": { "location": "features/step_definitions/options_steps.rb:41" },
+          "result": { "status": "passed", "duration": 2162537000 }
+        },
+        {
+          "keyword": "When ",
+          "name": "I click Page Settings",
+          "line": 19,
+          "match": { "location": "features/step_definitions/options_steps.rb:37" },
+          "result": { "status": "passed", "duration": 1400966000 }
+        },
+        {
+          "keyword": "Then ",
+          "name": "I should see the options overlay",
+          "line": 20,
+          "match": { "location": "features/step_definitions/options_steps.rb:69" },
+          "result": { "status": "passed", "duration": 1487332000 }
+        },
+        {
+          "keyword": "And ",
+          "name": "the options overlay should display Page Settings",
+          "line": 21,
+          "match": { "location": "features/step_definitions/options_steps.rb:81" },
+          "result": { "status": "passed", "duration": 1056103999 }
+        }
+      ]
+    },
+    {
+      "keyword": "Scenario",
+      "name": "Categories",
+      "line": 23,
+      "description": "",
+      "id": "visualeditor-options;categories",
+      "type": "scenario",
+      "steps": [
+        {
+          "keyword": "Given ",
+          "name": "I go to the \"Options VisualEditor Test\" page with content \"Options VisualEditor Test\"",
+          "line": 5,
+          "match": {
+            "arguments": [
+              { "offset": 13, "val": "Options VisualEditor Test" },
+              { "offset": 59, "val": "Options VisualEditor Test" }
+            ],
+            "location": "features/step_definitions/shared_steps.rb:17"
+          },
+          "result": { "status": "passed", "duration": 13972204000 }
+        },
+        {
+          "keyword": "And ",
+          "name": "I click in the editable part",
+          "line": 6,
+          "match": { "location": "features/step_definitions/shared_steps.rb:6" },
+          "result": { "status": "passed", "duration": 1267778000 }
+        },
+        {
+          "keyword": "And ",
+          "name": "I click the hamburger menu",
+          "line": 7,
+          "match": { "location": "features/step_definitions/options_steps.rb:41" },
+          "result": { "status": "passed", "duration": 2009850000 }
+        },
+        {
+          "keyword": "When ",
+          "name": "I click Categories",
+          "line": 24,
+          "match": { "location": "features/step_definitions/options_steps.rb:29" },
+          "result": { "status": "passed", "duration": 1477469000 }
+        },
+        {
+          "keyword": "Then ",
+          "name": "I should see the options overlay",
+          "line": 25,
+          "match": { "location": "features/step_definitions/options_steps.rb:69" },
+          "result": { "status": "passed", "duration": 2618606000 }
+        },
+        {
+          "keyword": "And ",
+          "name": "the options overlay should display Categories",
+          "line": 26,
+          "match": { "location": "features/step_definitions/options_steps.rb:77" },
+          "result": { "status": "passed", "duration": 1304112000 }
+        }
+      ]
+    },
+    {
+      "keyword": "Scenario",
+      "name": "Advanced Settings setting fields",
+      "line": 28,
+      "description": "",
+      "id": "visualeditor-options;advanced-settings-setting-fields",
+      "type": "scenario",
+      "steps": [
+        {
+          "keyword": "Given ",
+          "name": "I go to the \"Options VisualEditor Test\" page with content \"Options VisualEditor Test\"",
+          "line": 5,
+          "match": {
+            "arguments": [
+              { "offset": 13, "val": "Options VisualEditor Test" },
+              { "offset": 59, "val": "Options VisualEditor Test" }
+            ],
+            "location": "features/step_definitions/shared_steps.rb:17"
+          },
+          "result": { "status": "passed", "duration": 13794748000 }
+        },
+        {
+          "keyword": "And ",
+          "name": "I click in the editable part",
+          "line": 6,
+          "match": { "location": "features/step_definitions/shared_steps.rb:6" },
+          "result": { "status": "passed", "duration": 1255158000 }
+        },
+        {
+          "keyword": "And ",
+          "name": "I click the hamburger menu",
+          "line": 7,
+          "match": { "location": "features/step_definitions/options_steps.rb:41" },
+          "result": { "status": "passed", "duration": 2070142999 }
+        },
+        {
+          "keyword": "When ",
+          "name": "I click Advanced Settings",
+          "line": 29,
+          "match": { "location": "features/step_definitions/options_steps.rb:21" },
+          "result": { "status": "passed", "duration": 1431204000 }
+        },
+        {
+          "keyword": "And ",
+          "name": "I click Yes for Indexed by Search Engines",
+          "line": 30,
+          "match": { "location": "features/step_definitions/options_steps.rb:45" },
+          "result": { "status": "passed", "duration": 1390585000 }
+        },
+        {
+          "keyword": "And ",
+          "name": "I click Yes for showing tab for adding new section",
+          "line": 31,
+          "match": { "location": "features/step_definitions/options_steps.rb:49" },
+          "result": { "status": "passed", "duration": 1215773000 }
+        },
+        {
+          "keyword": "And ",
+          "name": "I check the option for Enable display title",
+          "line": 32,
+          "match": { "location": "features/step_definitions/options_steps.rb:1" },
+          "result": {
+            "status": "failed",
+            "error_message": "unable to locate element, using {:index=>4, :tag_name=>\"input\", :type=>\"checkbox\"} (Watir::Exception::UnknownObjectException)\n(eval):1:in `process_watir_call'\n./features/step_definitions/options_steps.rb:2:in `/^I check the option for Enable display title$/'\nfeatures/options.feature:32:in `And I check the option for Enable display title'",
+            "duration": 311250000
+          }
+        },
+        {
+          "keyword": "And ",
+          "name": "I type \"automated test\" for display title textbox",
+          "line": 33,
+          "match": {
+            "arguments": [{ "offset": 8, "val": "automated test" }],
+            "location": "features/step_definitions/options_steps.rb:61"
+          },
+          "result": { "status": "skipped", "duration": 962000 }
+        },
+        {
+          "keyword": "And ",
+          "name": "I click Apply Changes button",
+          "line": 34,
+          "match": { "location": "features/step_definitions/options_steps.rb:25" },
+          "result": { "status": "skipped", "duration": 724000 }
+        },
+        {
+          "keyword": "And ",
+          "name": "I click Save page",
+          "line": 35,
+          "match": { "location": "features/step_definitions/shared_steps.rb:49" },
+          "result": { "status": "skipped", "duration": 483000 }
+        },
+        {
+          "keyword": "And ",
+          "name": "I click Review your changes",
+          "line": 36,
+          "match": { "location": "features/step_definitions/shared_steps.rb:45" },
+          "result": { "status": "skipped", "duration": 500000 }
+        },
+        {
+          "keyword": "Then ",
+          "name": "the options set in Advanced Settings panel should appear in diff view",
+          "line": 37,
+          "match": { "location": "features/step_definitions/options_steps.rb:85" },
+          "result": { "status": "skipped", "duration": 889000 }
+        }
+      ]
+    },
+    {
+      "keyword": "Scenario",
+      "name": "Setting the fields in Page Settings",
+      "line": 39,
+      "description": "",
+      "id": "visualeditor-options;setting-the-fields-in-page-settings",
+      "type": "scenario",
+      "steps": [
+        {
+          "keyword": "Given ",
+          "name": "I go to the \"Options VisualEditor Test\" page with content \"Options VisualEditor Test\"",
+          "line": 5,
+          "match": {
+            "arguments": [
+              { "offset": 13, "val": "Options VisualEditor Test" },
+              { "offset": 59, "val": "Options VisualEditor Test" }
+            ],
+            "location": "features/step_definitions/shared_steps.rb:17"
+          },
+          "result": { "status": "passed", "duration": 13815343000 }
+        },
+        {
+          "keyword": "And ",
+          "name": "I click in the editable part",
+          "line": 6,
+          "match": { "location": "features/step_definitions/shared_steps.rb:6" },
+          "result": { "status": "passed", "duration": 1220136000 }
+        },
+        {
+          "keyword": "And ",
+          "name": "I click the hamburger menu",
+          "line": 7,
+          "match": { "location": "features/step_definitions/options_steps.rb:41" },
+          "result": { "status": "passed", "duration": 1182166000 }
+        },
+        {
+          "keyword": "When ",
+          "name": "I click Page Settings",
+          "line": 40,
+          "match": { "location": "features/step_definitions/options_steps.rb:37" },
+          "result": { "status": "passed", "duration": 1356627000 }
+        },
+        {
+          "keyword": "And ",
+          "name": "I check the option for Redirect this page to",
+          "line": 41,
+          "match": { "location": "features/step_definitions/options_steps.rb:13" },
+          "result": { "status": "passed", "duration": 1127131000 }
+        },
+        {
+          "keyword": "And ",
+          "name": "I type \"Linux\" for redirect page",
+          "line": 42,
+          "match": {
+            "arguments": [{ "offset": 8, "val": "Linux" }],
+            "location": "features/step_definitions/options_steps.rb:65"
+          },
+          "result": { "status": "passed", "duration": 1645933000 }
+        },
+        {
+          "keyword": "And ",
+          "name": "I check the option for Prevent this redirect being updated when target page is moved",
+          "line": 43,
+          "match": { "location": "features/step_definitions/options_steps.rb:9" },
+          "result": { "status": "passed", "duration": 995585000 }
+        },
+        {
+          "keyword": "And ",
+          "name": "I select the option Always for showing Table of Contents",
+          "line": 44,
+          "match": { "location": "features/step_definitions/options_steps.rb:57" },
+          "result": { "status": "passed", "duration": 1277368000 }
+        },
+        {
+          "keyword": "And ",
+          "name": "I check the option for Disable edit links next to each heading on this page",
+          "line": 45,
+          "match": { "location": "features/step_definitions/options_steps.rb:5" },
+          "result": { "status": "passed", "duration": 1002413000 }
+        },
+        {
+          "keyword": "And ",
+          "name": "I check the option for This is a Disambiguation page",
+          "line": 46,
+          "match": { "location": "features/step_definitions/options_steps.rb:17" },
+          "result": {
+            "status": "failed",
+            "error_message": "Element is not currently visible and so may not be interacted with (Selenium::WebDriver::Error::ElementNotVisibleError)\n[remote server] file:///var/folders/65/_x0d5xfx62dg61__x6cy3pz40000gp/T/webdriver-profile20150408-73323-lcegcm/extensions/fxdriver@googlecode.com/components/command-processor.js:12257:in `DelayedCommand.prototype.checkPreconditions_'\n[remote server] file:///var/folders/65/_x0d5xfx62dg61__x6cy3pz40000gp/T/webdriver-profile20150408-73323-lcegcm/extensions/fxdriver@googlecode.com/components/command-processor.js:12274:in `DelayedCommand.prototype.executeInternal_/h'\n[remote server] file:///var/folders/65/_x0d5xfx62dg61__x6cy3pz40000gp/T/webdriver-profile20150408-73323-lcegcm/extensions/fxdriver@googlecode.com/components/command-processor.js:12279:in `DelayedCommand.prototype.executeInternal_'\n[remote server] file:///var/folders/65/_x0d5xfx62dg61__x6cy3pz40000gp/T/webdriver-profile20150408-73323-lcegcm/extensions/fxdriver@googlecode.com/components/command-processor.js:12221:in `DelayedCommand.prototype.execute/<'\n(eval):1:in `process_watir_call'\n./features/step_definitions/options_steps.rb:18:in `/^I check the option for This is a Disambiguation page$/'\nfeatures/options.feature:46:in `And I check the option for This is a Disambiguation page'",
+            "duration": 954323000
+          }
+        },
+        {
+          "keyword": "And ",
+          "name": "I click Apply Changes button",
+          "line": 47,
+          "match": { "location": "features/step_definitions/options_steps.rb:25" },
+          "result": { "status": "skipped", "duration": 444000 }
+        },
+        {
+          "keyword": "And ",
+          "name": "I click Save page",
+          "line": 48,
+          "match": { "location": "features/step_definitions/shared_steps.rb:49" },
+          "result": { "status": "skipped", "duration": 380000 }
+        },
+        {
+          "keyword": "And ",
+          "name": "I click Review your changes",
+          "line": 49,
+          "match": { "location": "features/step_definitions/shared_steps.rb:45" },
+          "result": { "status": "skipped", "duration": 368000 }
+        },
+        {
+          "keyword": "Then ",
+          "name": "the options set in Page Settings panel should appear in diff view",
+          "line": 50,
+          "match": { "location": "features/step_definitions/options_steps.rb:94" },
+          "result": { "status": "skipped", "duration": 764000 }
+        }
+      ]
+    }
+  ]
+}
