@@ -3,16 +3,15 @@
 	<p><span class="label label-{ statuses[status] }">{ status }</span></p>
 
 	<div class="steps list-group">
-		<pl-step each={ steps }
+		<pl-step each={ nonBackgroundSteps() }
 			class="list-group-item list-group-item-{ parent.statuses[result.status] }"></pl-step>
 	</div>
 
 	<script>
-		this.statuses = {
-			'passed': 'success',
-			'skipped': 'warning',
-			'failed': 'danger'
-		};
+		var self = this;
+
+		self.background = opts.background;
+		self.statuses = { 'passed': 'success', 'skipped': 'warning', 'failed': 'danger' };
 
 		function statusOf(steps) {
 			for (var i = 0; i < steps.length; i++) {
@@ -26,9 +25,17 @@
 			return 'passed';
 		};
 
-		this.on('update', function () {
-			if (this.steps) {
-				this.status = statusOf(this.steps);
+		self.nonBackgroundSteps = function () {
+			if (self.type === 'background' || !self.background) {
+				return self.steps;
+			} else {
+				return self.steps.slice(self.background.steps.length);
+			}
+		};
+
+		self.on('update', function () {
+			if (self.steps) {
+				self.status = statusOf(self.steps);
 			}
 		});
 	</script>
