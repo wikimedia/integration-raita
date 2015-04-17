@@ -47,16 +47,31 @@
 			return request('get', pathTo(collection, id));
 		};
 
-		self.search = function (collection, query) {
-			return request('post', pathTo(collection, '_search'), query);
+		self.search = function (collection, query, fields) {
+			fields = fields || [ '_source' ];
+			return request('post', pathTo(collection, '_search') + '?fields=' + fields.join(','), query);
 		};
 
-		self.sourcesOf = function (results) {
-			var sources = [];
+		self.sourcesOf = function (results, mapByProperty) {
+			var sources = mapByProperty ? {} : [];
 
 			for (var i = 0; i < results.length; i++) {
-				sources.push(results[i]._source);
-				sources[i]._id = results[i]._id;
+				var source = results[i]._source;
+
+				source._id = results[i]._id;
+
+				if (results[i].fields) {
+					for (var k in results[i].fields) {
+						source[k] = results[i].fields[k];
+					}
+				}
+
+				if (mapByProperty) {
+					sources[source[mapByProperty]] = sources[source[mapByProperty]] || [];
+					sources[source[mapByProperty]].push(source);
+				} else {
+					sources.push(source);
+				}
 			}
 
 			return sources;
@@ -69,30 +84,55 @@
 		var self = {},
 				db = Platter.Database(dbURL);
 
-		self.compileUserFilter = function (ufilter) {
-			var esfilter = { must: [], should: [] };
+		self.compileUserFilter = function (type, ufilter) {
+			var esfilter = { bool: { must: [], should: [] } },
+					scoped;
+
+			if (type === 'feature') {
+				scoped = function (f) { return { has_child: { type: 'feature-element', filter: f } }; };
+			} else {
+				scoped = function (f) { return f; };
+			}
+
+			function stepStatus(vals) {
+				return { nested: { path: 'steps', filter: { terms: { 'steps.result.status': vals } } } };
+			}
 
 			if (ufilter) {
 				for (var i = 0; i < ufilter.length; i++) {
-					for (var k in ufilter[i]) {
-						var val = ufilter[i][k];
+					for (var key in ufilter[i]) {
+						var val = ufilter[i][key];
 
-						switch (k) {
+						switch (key) {
 							case 'tag':
-								esfilter.should.push({ term: { 'tags.name': val } });
+								var filter = { nested: { path: 'tags', filter: { term: { 'tags.name': val } } } };
+
+								esfilter.bool.should.push(filter);
+
+								if (type == 'element') {
+									esfilter.bool.should.push({ has_parent: { type: 'feature', filter: filter } });
+								} else {
+									esfilter.bool.should.push(scoped(filter));
+								}
 								break;
 							case 'status':
-								esfilter.must.push({
-									nested: {
-										path: 'elements.steps',
-										filter: { term: { 'elements.steps.result.status': val } }
-									}
-								});
+								var filter;
+
+								if (val === 'passed') {
+									filter = { not: stepStatus(['failed', 'skipped']) };
+								} else {
+									filter = stepStatus([val]);
+								}
+
+								esfilter.bool.must.push(scoped(filter));
+
 								break;
 						}
 					}
 				}
 			}
+
+			esfilter.bool = self.pruneFilter(esfilter.bool);
 
 			return esfilter;
 		};
@@ -116,19 +156,51 @@
 			});
 		};
 
-		self.loadFeatures = function (buildId, ufilter) {
-			var filter = self.compileUserFilter(ufilter);
-			filter.must.push({ has_parent: { type: 'build', filter: { term: { _id: buildId } } } });
+		self.loadElements = function (featureIds, ufilter) {
+			var elementFilter = {
+				bool: {
+					must: { has_parent: { type: 'feature', filter: { ids: { values: featureIds } } } }
+				}
+			};
 
-			if (filter.should.length === 0) {
-				delete filter.should;
+			ufilter = self.compileUserFilter('element', ufilter);
+
+			if (Object.keys(ufilter.bool).length > 0) {
+				elementFilter.bool.should = [
+					{ term: { type: "background" } },
+					ufilter
+				];
 			}
 
-			db.search('feature', { filter: { bool: filter } }).done(function (data) {
-				var features = db.sourcesOf(data.hits.hits);
+			db.search('feature-element', { filter: elementFilter }, [ '_source', '_parent'])
+				.done(function (data) {
+					console.log(data);
+					self.trigger('load-build-features-elements', db.sourcesOf(data.hits.hits, '_parent'));
+				});
+		};
 
-				self.postFilterScenarios(features, ufilter);
-				self.trigger('load-build-features', buildId, features);
+		self.loadFeatures = function (buildId, ufilter) {
+			var featureFilter = {
+				bool: {
+					must: [ { has_parent: { type: 'build', filter: { term: { _id: buildId } } } } ]
+				}
+			};
+
+			ufilter = self.compileUserFilter('feature', ufilter);
+
+			if (ufilter.bool.must) {
+				for (var i = 0; i < ufilter.bool.must.length; i++) {
+					featureFilter.bool.must.push(ufilter.bool.must[i]);
+				}
+			}
+
+			if (ufilter.bool.should) {
+				featureFilter.bool.should = ufilter.bool.should;
+			}
+
+			db.search('feature', { filter: featureFilter }).done(function (data) {
+				console.log(data);
+				self.trigger('load-build-features', buildId, db.sourcesOf(data.hits.hits));
 			});
 		};
 
@@ -145,69 +217,20 @@
 			});
 		};
 
-		self.matchesFilter = function (element, ufilter) {
-			var index = { tag: [], status: 'passed' },
-					filters = [],
-					matches = {},
-					match = true;
-
-			if (!ufilter || element.type === 'background') {
-				return true;
-			}
-
-			for (var i = 0; i < ufilter.length; i++) {
-				for (var k in ufilter[i]) {
-					filters.push(k);
-				}
-			}
-
-			if (element.name.match(/advanced setting/i)) debugger;
-
-			for (var i = 0; i < element.steps.length; i++) {
-				var step = element.steps[i];
-
-				if (index.status !== 'failed' && step.result.status !== index.status) {
-					index.status = step.result.status;
-				}
-
-				for (var j = 0; step.tags && j < step.tags.length; j++) {
-					index.tag.push(step.tags[j].name);
-				}
-			}
-
-			for (var k in index) {
-				matches[k] = filters.indexOf(k) === -1;
-			}
-
-			for (var i = 0; i < ufilter.length; i++) {
-				for (var k in ufilter[i]) {
-					if (typeof index[k] !== undefined) {
-						var val = ufilter[i][k];
-
-						if (index[k] === val || index[k].indexOf(val) > -1) {
-							matches[k] = true;
-						}
-					}
-				}
-			}
-
-			for (var k in matches) {
-				match = match && matches[k];
-			}
-
-			return match;
-		};
-
 		self.mount = function (selector) {
 			riot.mount(selector, 'pl-dashboard', self);
 		};
 
-		self.postFilterScenarios = function (features, ufilter) {
-			for (var i = 0; i < features.length; i++) {
-				features[i].elements = features[i].elements.filter(function (element) {
-					return self.matchesFilter(element, ufilter);
-				});
+		self.pruneFilter = function (filter) {
+			var newFilter = {};
+
+			for (var k in filter) {
+				if (filter[k].length > 0) {
+					newFilter[k] = filter[k];
+				}
 			}
+
+			return newFilter;
 		};
 
 		self.route = function (collection, id) {

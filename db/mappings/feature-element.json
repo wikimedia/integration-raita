@@ -1,0 +1,34 @@
+{
+	"feature-element": {
+		"_parent": { "type": "feature" },
+		"properties": {
+			"keyword": { "type": "string" },
+			"name": { "type": "string" },
+			"line": { "type": "integer" },
+			"description": { "type": "string" },
+			"tags": {
+				"type": "nested",
+				"properties": {
+					"name": { "type": "string", "index": "not_analyzed" },
+					"line": { "type": "integer" }
+				}
+			},
+			"type": { "type": "string", "index": "not_analyzed" },
+			"steps": {
+				"type": "nested",
+				"properties": {
+					"keyword": { "type": "string" },
+					"name": { "type": "string" },
+					"line": { "type": "integer" },
+					"match.arguments.offset": { "type": "integer", "index": "no" },
+					"match.arguments.val": { "type": "string", "index": "no" },
+					"match.location": { "type": "string", "index": "not_analyzed" },
+					"result.status": { "type": "string", "index": "not_analyzed" },
+					"result.duration": { "type": "long" }
+				}
+			}
+			"result.status": { "type": "string", "index": "not_analyzed" },
+			"result.duration": { "type": "long" }
+		}
+	}
+}

@@ -1,0 +1,13 @@
+{
+	"build": {
+		"properties": {
+			"build_number": { "type": "integer" },
+			"result.status": { "type": "string", "index": "not_analyzed" },
+			"result.duration": { "type": "long" }
+		},
+		"_timestamp": {
+			"enabled": true,
+			"store": true
+		}
+	}
+}

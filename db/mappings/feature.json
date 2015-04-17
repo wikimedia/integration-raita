@@ -1,0 +1,22 @@
+{
+	"feature": {
+		"_parent": { "type": "build" },
+		"properties": {
+			"keyword": { "type": "string" },
+			"name": { "type": "string" },
+			"line": { "type": "integer" },
+			"description": { "type": "string" },
+			"tags": {
+				"type": "nested",
+				"properties": {
+					"name": { "type": "string", "index": "not_analyzed" },
+					"line": { "type": "integer" }
+				}
+			},
+			"id": { "type": "string", "index": "not_analyzed" },
+			"uri": { "type": "string", "index": "not_analyzed" },
+			"result.status": { "type": "string", "index": "not_analyzed" },
+			"result.duration": { "type": "long" }
+		}
+	}
+}
