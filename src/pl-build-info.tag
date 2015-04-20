@@ -43,14 +43,8 @@
 				self.features.forEach(function (feature) {
 					feature.elements.forEach(function (element) {
 						if (element.type == 'scenario') {
-							var steps = element.steps;
-
-							if (steps.some(function (step) { return step.result.status == 'failed'; })) {
-								self.stats.failed++;
-							} else if (steps.some(function (step) { return step.result.status == 'skipped'; })) {
-								self.stats.skipped++;
-							} else {
-								self.stats.passed++;
+							if (typeof self.stats[element.result.status] !== 'undefined') {
+								self.stats[element.result.status]++;
 							}
 
 							total++;

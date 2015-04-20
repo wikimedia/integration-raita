@@ -19,7 +19,7 @@
 		riot.route.exec(dash.route);
 
 		if (location.hash.length === 0) {
-			location.hash = '#builds/latest'
+			location.hash = '#builds/latest';
 		}
 
 		return dash;
@@ -85,17 +85,14 @@
 				db = Platter.Database(dbURL);
 
 		self.compileUserFilter = function (type, ufilter) {
-			var esfilter = { bool: { must: [], should: [] } },
-					scoped;
+			var esfilter = { bool: { must: [], should: [] } };
 
-			if (type === 'feature') {
-				scoped = function (f) { return { has_child: { type: 'feature-element', filter: f } }; };
-			} else {
-				scoped = function (f) { return f; };
-			}
-
-			function stepStatus(vals) {
-				return { nested: { path: 'steps', filter: { terms: { 'steps.result.status': vals } } } };
+			function relation(filter) {
+				if (type === 'feature-element') {
+					return { has_parent: { type: 'feature', filter: filter } };
+				} else {
+					return { has_child: { type: 'feature-element', filter: filter } };
+				}
 			}
 
 			if (ufilter) {
@@ -107,25 +104,12 @@
 							case 'tag':
 								var filter = { nested: { path: 'tags', filter: { term: { 'tags.name': val } } } };
 
-								esfilter.bool.should.push(filter);
-
-								if (type == 'element') {
-									esfilter.bool.should.push({ has_parent: { type: 'feature', filter: filter } });
-								} else {
-									esfilter.bool.should.push(scoped(filter));
-								}
+								esfilter.bool.should.push(filter, relation(filter));
 								break;
 							case 'status':
-								var filter;
+								var filter = { term: { 'result.status': val } };
 
-								if (val === 'passed') {
-									filter = { not: stepStatus(['failed', 'skipped']) };
-								} else {
-									filter = stepStatus([val]);
-								}
-
-								esfilter.bool.must.push(scoped(filter));
-
+								esfilter.bool.must.push(type === 'feature' ? relation(filter) : filter);
 								break;
 						}
 					}
@@ -149,11 +133,12 @@
 		};
 
 		self.loadBuilds = function (limit) {
-			db.search('build', { sort: [ { _timestamp: { order: 'desc' } } ] }).done(function (data) {
-				if (data.hits.hits.length > 0) {
-					self.trigger('load-builds', db.sourcesOf(data.hits.hits));
-				}
-			});
+			db.search('build', { sort: [ { _timestamp: { order: 'desc' } } ] })
+				.done(function (data) {
+					if (data.hits.hits.length > 0) {
+						self.trigger('load-builds', db.sourcesOf(data.hits.hits));
+					}
+				});
 		};
 
 		self.loadElements = function (featureIds, ufilter) {
@@ -163,7 +148,7 @@
 				}
 			};
 
-			ufilter = self.compileUserFilter('element', ufilter);
+			ufilter = self.compileUserFilter('feature-element', ufilter);
 
 			if (Object.keys(ufilter.bool).length > 0) {
 				elementFilter.bool.should = [
@@ -174,7 +159,6 @@
 
 			db.search('feature-element', { filter: elementFilter }, [ '_source', '_parent'])
 				.done(function (data) {
-					console.log(data);
 					self.trigger('load-build-features-elements', db.sourcesOf(data.hits.hits, '_parent'));
 				});
 		};
@@ -199,7 +183,6 @@
 			}
 
 			db.search('feature', { filter: featureFilter }).done(function (data) {
-				console.log(data);
 				self.trigger('load-build-features', buildId, db.sourcesOf(data.hits.hits));
 			});
 		};

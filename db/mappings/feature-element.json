@@ -26,7 +26,7 @@
 					"result.status": { "type": "string", "index": "not_analyzed" },
 					"result.duration": { "type": "long" }
 				}
-			}
+			},
 			"result.status": { "type": "string", "index": "not_analyzed" },
 			"result.duration": { "type": "long" }
 		}
