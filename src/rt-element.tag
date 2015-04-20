@@ -1,10 +1,10 @@
-<pl-element>
+<rt-element>
 	<h4 class="list-group-item-heading"><span class="keyword">{ keyword }</span>: { name }</h4>
 	<p><span class="label label-{ statuses[result.status] }">{ result.status }</span></p>
 
 	<div class="steps list-group">
-		<pl-step each={ nonBackgroundSteps() }
-			class="list-group-item list-group-item-{ parent.statuses[result.status] }"></pl-step>
+		<rt-step each={ nonBackgroundSteps() }
+			class="list-group-item list-group-item-{ parent.statuses[result.status] }"></rt-step>
 	</div>
 
 	<script>
@@ -21,4 +21,4 @@
 			}
 		};
 	</script>
-</pl-element>
+</rt-element>

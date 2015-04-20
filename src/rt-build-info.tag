@@ -1,4 +1,4 @@
-<pl-build-info>
+<rt-build-info>
 	<h2 if={ !buildId }>Loading build...</h2>
 	<h2 if={ buildId }>Build { buildNumber }</h2>
 	<div class="progress">
@@ -21,12 +21,12 @@
 	</div>
 
 	<style>
-		pl-build-info .label {
+		rt-build-info .label {
 			font-size: 100%;
 			background-color: rgba(119, 119, 119, 0.75);
 		}
 
-		pl-build-info a {
+		rt-build-info a {
 			cursor: pointer;
 		}
 	</style>
@@ -62,10 +62,10 @@
 
 		['failed', 'skipped', 'passed'].forEach(function (status) {
 			self[status + 'Clicked'] = function () {
-				self.trigger('pl:status-click', status);
+				self.trigger('rt:status-click', status);
 			};
 		});
 
 		self.on('update', recalculate);
 	</script>
-</pl-build-info>
+</rt-build-info>

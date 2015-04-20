@@ -1,18 +1,18 @@
 (function (binding, factory) {
 	if (typeof define === 'function' && define.amd) {
-		define('platter', ['riot', 'jquery'], factory);
+		define('raita', ['riot', 'jquery'], factory);
 	} else {
-		binding.Platter = factory(binding.riot, binding.jQuery);
+		binding.raita = factory(binding.riot, binding.jQuery);
 	}
 })(this, function (riot, $) {
 	'use strict';
 
-	var Platter = {};
+	var raita = {};
 
-	Platter.VERSION = '0.0.0';
+	raita.VERSION = '0.0.0';
 
-	Platter.dashboard = function (selector, dbURL) {
-		var dash = new Platter.Dashboard(dbURL);
+	raita.dashboard = function (selector, dbURL) {
+		var dash = new raita.Dashboard(dbURL);
 
 		function router() {
 			dash.route.apply(dash, arguments);
@@ -29,7 +29,7 @@
 		return dash;
 	};
 
-	Platter.Database = function (url) {
+	raita.Database = function (url) {
 		this.url = url;
 	};
 
@@ -83,10 +83,10 @@
 			return sources;
 		};
 
-	})(Platter.Database.prototype);
+	})(raita.Database.prototype);
 
-	Platter.Dashboard = function (dbURL) {
-		this.db = new Platter.Database(dbURL);
+	raita.Dashboard = function (dbURL) {
+		this.db = new raita.Database(dbURL);
 		riot.observable(this);
 	};
 
@@ -218,7 +218,7 @@
 		};
 
 		dash.mount = function (selector) {
-			riot.mount(selector, 'pl-dashboard', this);
+			riot.mount(selector, 'rt-dashboard', this);
 		};
 
 		dash.pruneFilter = function (filter) {
@@ -256,7 +256,7 @@
 			tag.on('unmount', sub('off'));
 		};
 
-	})(Platter.Dashboard.prototype);
+	})(raita.Dashboard.prototype);
 
-	return Platter;
+	return raita;
 });

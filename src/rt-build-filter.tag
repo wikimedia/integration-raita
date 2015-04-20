@@ -1,4 +1,4 @@
-<pl-build-filter>
+<rt-build-filter>
 	<form onsubmit={ submit }>
 		<div class="input-group">
 			<span class="input-group-btn">
@@ -56,4 +56,4 @@
 			self.trigger('pl:filter', self.filter);
 		};
 	</script>
-</pl-build-filter>
+</rt-build-filter>

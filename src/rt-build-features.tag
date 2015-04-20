@@ -1,6 +1,6 @@
-<pl-build-features>
+<rt-build-features>
 	<div class="list-group">
-		<pl-feature each={ nonEmptyFeatures() } class="list-group-item"></pl-feature>
+		<rt-feature each={ nonEmptyFeatures() } class="list-group-item"></rt-feature>
 	</div>
 
 	<script>
@@ -12,4 +12,4 @@
 			});
 		};
 	</script>
-</pl-build-features>
+</rt-build-features>
