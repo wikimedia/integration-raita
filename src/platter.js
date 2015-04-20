@@ -12,11 +12,15 @@
 	Platter.VERSION = '0.0.0';
 
 	Platter.dashboard = function (selector, dbURL) {
-		var dash = Platter.Dashboard(dbURL);
+		var dash = new Platter.Dashboard(dbURL);
 
-		riot.route(dash.route);
+		function router() {
+			dash.route.apply(dash, arguments);
+		}
+
+		riot.route(router);
 		dash.mount(selector);
-		riot.route.exec(dash.route);
+		riot.route.exec(router);
 
 		if (location.hash.length === 0) {
 			location.hash = '#builds/latest';
@@ -26,13 +30,19 @@
 	};
 
 	Platter.Database = function (url) {
-		var self = {};
+		this.url = url;
+	};
 
-		function pathTo() {
-			return url + '/' + Array.prototype.join.call(arguments, '/');
-		}
+	(function (db) {
+		db.get = function (collection, id) {
+			return this.request('get', this.pathTo(collection, id));
+		};
 
-		function request(method, url, data) {
+		db.pathTo = function () {
+			return this.url + '/' + Array.prototype.join.call(arguments, '/');
+		};
+
+		db.request = function (method, url, data) {
 			var options = { method: method, url: url };
 
 			if (typeof data !== 'undefined') {
@@ -41,18 +51,14 @@
 			}
 
 			return $.ajax(options);
-		}
-
-		self.get = function (collection, id) {
-			return request('get', pathTo(collection, id));
 		};
 
-		self.search = function (collection, query, fields) {
-			fields = fields || [ '_source' ];
-			return request('post', pathTo(collection, '_search') + '?fields=' + fields.join(','), query);
+		db.search = function (collection, query, fields) {
+			fields = (fields || [ '_source' ]).join(',');
+			return this.request('post', this.pathTo(collection, '_search') + '?fields=' + fields, query);
 		};
 
-		self.sourcesOf = function (results, mapByProperty) {
+		db.sourcesOf = function (results, mapByProperty) {
 			var sources = mapByProperty ? {} : [];
 
 			for (var i = 0; i < results.length; i++) {
@@ -75,16 +81,17 @@
 			}
 
 			return sources;
-		}
+		};
 
-		return self;
-	};
+	})(Platter.Database.prototype);
 
 	Platter.Dashboard = function (dbURL) {
-		var self = {},
-				db = Platter.Database(dbURL);
+		this.db = new Platter.Database(dbURL);
+		riot.observable(this);
+	};
 
-		self.compileUserFilter = function (type, ufilter) {
+	(function (dash) {
+		dash.compileUserFilter = function (type, ufilter) {
 			var esfilter = { bool: { must: [], should: [] } };
 
 			function relation(filter) {
@@ -116,39 +123,45 @@
 				}
 			}
 
-			esfilter.bool = self.pruneFilter(esfilter.bool);
+			esfilter.bool = this.pruneFilter(esfilter.bool);
 
 			return esfilter;
 		};
 
-		self.loadBuild = function (id) {
+		dash.loadBuild = function (id) {
+			var self = this;
+
 			if (id == 'latest') {
-				self.loadLatestBuild();
+				this.loadLatestBuild();
 			} else {
-				db.get('build', id)
+				this.db.get('build', id)
 					.done(function (data) {
 						self.trigger('load-build', data._id, data._source);
 					});
 			}
 		};
 
-		self.loadBuilds = function (limit) {
-			db.search('build', { sort: [ { _timestamp: { order: 'desc' } } ] })
+		dash.loadBuilds = function (limit) {
+			var self = this;
+
+			this.db.search('build', { sort: [ { _timestamp: { order: 'desc' } } ] })
 				.done(function (data) {
 					if (data.hits.hits.length > 0) {
-						self.trigger('load-builds', db.sourcesOf(data.hits.hits));
+						self.trigger('load-builds', self.db.sourcesOf(data.hits.hits));
 					}
 				});
 		};
 
-		self.loadElements = function (featureIds, ufilter) {
+		dash.loadElements = function (featureIds, ufilter) {
+			var self = this;
+
 			var elementFilter = {
 				bool: {
 					must: { has_parent: { type: 'feature', filter: { ids: { values: featureIds } } } }
 				}
 			};
 
-			ufilter = self.compileUserFilter('feature-element', ufilter);
+			ufilter = this.compileUserFilter('feature-element', ufilter);
 
 			if (Object.keys(ufilter.bool).length > 0) {
 				elementFilter.bool.should = [
@@ -157,20 +170,22 @@
 				];
 			}
 
-			db.search('feature-element', { filter: elementFilter }, [ '_source', '_parent'])
+			this.db.search('feature-element', { filter: elementFilter }, [ '_source', '_parent'])
 				.done(function (data) {
-					self.trigger('load-build-features-elements', db.sourcesOf(data.hits.hits, '_parent'));
+					self.trigger('load-build-features-elements', self.db.sourcesOf(data.hits.hits, '_parent'));
 				});
 		};
 
-		self.loadFeatures = function (buildId, ufilter) {
+		dash.loadFeatures = function (buildId, ufilter) {
+			var self = this;
+
 			var featureFilter = {
 				bool: {
 					must: [ { has_parent: { type: 'build', filter: { term: { _id: buildId } } } } ]
 				}
 			};
 
-			ufilter = self.compileUserFilter('feature', ufilter);
+			ufilter = this.compileUserFilter('feature', ufilter);
 
 			if (ufilter.bool.must) {
 				for (var i = 0; i < ufilter.bool.must.length; i++) {
@@ -182,13 +197,15 @@
 				featureFilter.bool.should = ufilter.bool.should;
 			}
 
-			db.search('feature', { filter: featureFilter }).done(function (data) {
-				self.trigger('load-build-features', buildId, db.sourcesOf(data.hits.hits));
+			this.db.search('feature', { filter: featureFilter }).done(function (data) {
+				self.trigger('load-build-features', buildId, self.db.sourcesOf(data.hits.hits));
 			});
 		};
 
-		self.loadLatestBuild = function () {
-			db.search('build', {
+		dash.loadLatestBuild = function () {
+			var self = this;
+
+			this.db.search('build', {
 				size: 1,
 				sort: [ { _timestamp: { order: 'desc' } } ]
 			})
@@ -200,11 +217,11 @@
 			});
 		};
 
-		self.mount = function (selector) {
-			riot.mount(selector, 'pl-dashboard', self);
+		dash.mount = function (selector) {
+			riot.mount(selector, 'pl-dashboard', this);
 		};
 
-		self.pruneFilter = function (filter) {
+		dash.pruneFilter = function (filter) {
 			var newFilter = {};
 
 			for (var k in filter) {
@@ -216,15 +233,17 @@
 			return newFilter;
 		};
 
-		self.route = function (collection, id) {
+		dash.route = function (collection, id) {
 			switch (collection) {
 				case 'builds':
-					self.loadBuild(id);
+					this.loadBuild(id);
 					break;
 			}
 		};
 
-		self.subscribe = function (tag, callbacks) {
+		dash.subscribe = function (tag, callbacks) {
+			var self = this;
+
 			function sub(onOff) {
 				return function () {
 					for (var ev in callbacks) {
@@ -237,10 +256,7 @@
 			tag.on('unmount', sub('off'));
 		};
 
-		riot.observable(self);
-
-		return self;
-	};
+	})(Platter.Dashboard.prototype);
 
 	return Platter;
 });
