@@ -34,7 +34,7 @@
 				// TODO this is confusing
 				self.tags['rt-build-filter'].update({ filter: [] });
 
-				self.tags['rt-build-info'].update({ buildId: id, buildNumber: build.build_number });
+				self.tags['rt-build-info'].update({ buildId: id, buildNumber: build.number });
 				self.tags['rt-builds'].update({ currentBuildId: id });
 			},
 
