@@ -4,6 +4,8 @@
  * @copyright 2015 Dan Duvall <dduvall@wikimedia.org> + contributors
  */
 (function (binding, factory) {
+	'use strict';
+
 	if (typeof define === 'function' && define.amd) {
 		define('raita', ['riot', 'jquery'], factory);
 	} else {
@@ -219,16 +221,17 @@
 			if (ufilter) {
 				for (var i = 0; i < ufilter.length; i++) {
 					for (var key in ufilter[i]) {
-						var val = ufilter[i][key];
+						var val = ufilter[i][key],
+								filter;
 
 						switch (key) {
 							case 'tag':
-								var filter = { nested: { path: 'tags', filter: { term: { 'tags.name': val } } } };
+								filter = { nested: { path: 'tags', filter: { term: { 'tags.name': val } } } };
 
 								esfilter.bool.should.push(filter, relation(filter));
 								break;
 							case 'status':
-								var filter = { term: { 'result.status': val } };
+								filter = { term: { 'result.status': val } };
 
 								esfilter.bool.must.push(type === 'feature' ? relation(filter) : filter);
 								break;
@@ -251,7 +254,7 @@
 		dash.loadBuild = function (id) {
 			var self = this;
 
-			if (id == 'latest') {
+			if (id === 'latest') {
 				this.loadLatestBuild();
 			} else {
 				this.db.get('build', id)
@@ -267,7 +270,7 @@
 		 *
 		 * @param {Object[]} builds Build documents.
 		 */
-		dash.loadBuilds = function (limit) {
+		dash.loadBuilds = function () {
 			var self = this;
 
 			this.db.search('build', { sort: [ { _timestamp: { order: 'desc' } } ] })

@@ -1,0 +1,22 @@
+{
+   // Enforcing
+   "bitwise": true,
+   "eqeqeq": true,
+   "es3": true,
+   "freeze": true,
+   "latedef": true,
+   "noarg": true,
+   "nonew": true,
+   "undef": true,
+   "unused": true,
+   "strict": true,
+
+   // Environment
+   "browser": true,
+
+   "globals": {
+       "define": true,
+       "JSON": true,
+       "jQuery": true
+   }
+}
