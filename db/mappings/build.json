@@ -1,7 +1,17 @@
 {
 	"build": {
 		"properties": {
-			"build_number": { "type": "integer" },
+			"number": { "type": "integer" },
+			"url": { "type": "string", "index": "not_analyzed" },
+			"project.name": { "type": "string", "index": "not_analyzed" },
+			"project.commit": { "type": "string", "index": "not_analyzed" },
+			"project.branch": { "type": "string", "index": "not_analyzed" },
+			"project.repo": { "type": "string", "index": "not_analyzed" },
+			"environment.name": { "type": "string", "index": "not_analyzed" },
+			"environment.url": { "type": "string", "index": "not_analyzed" },
+			"browser.name": { "type": "string", "index": "not_analyzed" },
+			"browser.version": { "type": "string", "index": "not_analyzed" },
+			"browser.platform": { "type": "string", "index": "not_analyzed" },
 			"result.status": { "type": "string", "index": "not_analyzed" },
 			"result.duration": { "type": "long" }
 		},
