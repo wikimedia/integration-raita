@@ -1,5 +1,5 @@
 /*!
- * Imports all Elasticsearch document type mappings.
+ * Imports Elasticsearch document type mappings from db/mappings/*.json files.
  */
 
 var fs = require('fs'),
@@ -20,18 +20,55 @@ function pathToMapping(type) {
 	return url.resolve(esURL + '/', path.join(type, '_mapping'));
 }
 
-fs.readdir(mappingsDir, function (err, files) {
-	files.forEach(function (file) {
-		var type;
+/**
+ * Simplified request function. Reads all data from the response and passes it
+ * to the callback function.
+ */
+function request(method, reqURL, cb, data) {
+	var opts = url.parse(reqURL),
+			req;
 
-		if (path.extname(file) === '.json') {
-			type = path.basename(file, '.json');
+	opts.method = method;
 
-			http.get(pathToMapping(type), function (res) {
-				var json = '';
+	if (typeof data !== 'undefined') {
+		opts.headers = {
+			'Content-Type': 'application/json',
+			'Content-Length': data.length,
+		};
+	}
 
-				res.on('data', function (d) { json += d.toString(); }).on('end', function () {
-					if (res.statusCode === 200 && Object.keys(JSON.parse(json)).length === 0) {
+	req = http.request(opts, function (res) {
+		var json = '';
+
+		res.on('data', function (d) { json += d.toString(); });
+		res.on('end', function () {
+			if (json.length > 0) {
+				cb(res, res.statusCode, JSON.parse(json));
+			} else {
+				cb(res, res.statusCode);
+			}
+		});
+	});
+
+	req.on('error', function (err) {
+		throw 'request to `' + reqURL + '` failed: ' + err.message;
+	});
+
+	req.end(data);
+
+	return req;
+}
+
+function main() {
+	fs.readdir(mappingsDir, function (err, files) {
+		files.forEach(function (file) {
+			var type;
+
+			if (path.extname(file) === '.json') {
+				type = path.basename(file, '.json');
+
+				request('GET', pathToMapping(type), function (res, status, mapping) {
+					if ((status === 200 && Object.keys(mapping).length === 0) || status === 404) {
 						if (operation === 'check') {
 							throw 'check failed. mapping for `' + type + '` is missing';
 						} else {
@@ -41,14 +78,11 @@ fs.readdir(mappingsDir, function (err, files) {
 							fs.readFile(path.join(mappingsDir, file), function (err, mapping) {
 								if (err) throw err;
 
-								var options = url.parse(pathToMapping(type));
-								options.method = 'PUT';
-								options.headers = {
-									'Content-Type': 'application/json',
-									'Content-Length': mapping.length
-								};
-
-								http.request(options).end(mapping);
+								request('PUT', pathToMapping(type), function (res, status) {
+									if (status !== 200) {
+										throw 'failed to import mapping for `' + type + '`';
+									}
+								}, mapping);
 							});
 
 						}
@@ -56,7 +90,17 @@ fs.readdir(mappingsDir, function (err, files) {
 						console.log('mapping for `' + type + '` already exists')
 					}
 				});
-			});
-		}
+			}
+		});
 	});
+}
+
+request('HEAD', esURL, function (res, status) {
+	// If the index doesn't exist, try to create it before continuing
+	if (operation === 'import' && status === 404) {
+		console.log('creating index');
+		request('PUT', esURL, main, '{}');
+	} else {
+		main();
+	}
 });
