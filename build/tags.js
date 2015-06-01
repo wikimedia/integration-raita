@@ -1,15 +1,48 @@
-riot.tag('rt-build-features', '<div class="list-group"> <rt-feature each="{ nonEmptyFeatures() }" class="list-group-item"></rt-feature> </div>', function(opts) {
+riot.tag('rt-build-features', '<div class="list-group { filterFlags }"> <rt-feature each="{ nonEmptyFeatures() }" class="list-group-item"></rt-feature> </div>', function(opts) {
 		var self = this;
+
+		self.filters = function () {
+			var classes = [];
+
+			if (self.filter) {
+				for (var i = 0; i < self.filter.length; i++) {
+					if ('status' in self.filter[i]) {
+						classes.push(self.filter[i].status);
+					}
+				}
+			}
+
+			return classes;
+		};
 
 		self.nonEmptyFeatures = function () {
 			return self.features.filter(function (feature) {
-				return feature.elements.length > 1 || feature.elements[0].type !== 'background';
+				return feature.elements.length > 0 &&
+					(feature.elements.length > 1 || feature.elements[0].type !== 'background');
 			});
 		};
+
+		self.on('update', function () {
+			if (typeof self.filter !== 'undefined') {
+				var flags = [];
+
+				for (var i = 0; i < self.filter.length; i++) {
+					for (var k in self.filter[i]) {
+						flags.push(k + '-' + self.filter[i][k]);
+					}
+				}
+
+				self.filterFlags = flags.join(' ');
+			}
+		});
+
+		self.on('updated', function () {
+			raita.bubble(self, 'rt-feature', 'rt:select-tag');
+		});
 	
 });
 
-riot.tag('rt-build-filter', '<form onsubmit="{ submit }"> <div class="input-group"> <span class="input-group-btn"> <button class="btn btn-default" type="button" onclick="{ clear }"><span class="glyphicon glyphicon-filter"></span></button> </span> <input class="form-control" type="text" name="filterString" value="{ filterToString() }" placeholder="e.g. \'status:failed\', \'status:skipped\', \'@some-tag-name\'"> <span class="input-group-btn"> <button class="btn btn-info" type="submit">Update</button> </span> </div> </form>', function(opts) {
+riot.tag('rt-build-filter', '<form onsubmit="{ submit }"> <div class="filter input-group"> <span class="input-group-btn"> <button class="btn btn-default" type="button" onclick="{ clear }"><span class="octicon octicon-circle-slash"></span></button> </span> <input class="form-control" type="text" name="filterString" value="{ filterToString() }" placeholder="e.g. \'status:failed\', \'status:skipped\', \'@some-tag-name\'"> <span class="input-group-btn"> <button class="btn btn-info" type="submit">Update</button> </span> </div> </form>', function(opts) {
 		var self = this;
 
 		self.filter = [];
@@ -30,7 +63,7 @@ riot.tag('rt-build-filter', '<form onsubmit="{ submit }"> <div class="input-grou
 
 		self.clear = function () {
 			self.filter = [];
-			self.trigger('pl:filter', self.filter);
+			self.trigger('rt:filter', self.filter);
 			self.filterString.focus();
 		};
 
@@ -50,7 +83,7 @@ riot.tag('rt-build-filter', '<form onsubmit="{ submit }"> <div class="input-grou
 
 		self.submit = function () {
 			self.filter = filterFromString(self.filterString.value);
-			self.trigger('pl:filter', self.filter);
+			self.trigger('rt:filter', self.filter);
 		};
 	
 });
@@ -65,15 +98,17 @@ riot.tag('rt-build-info', '<h2 if="{ !buildId }">Loading build...</h2> <h2 if="{
 				var total = 0;
 
 				self.features.forEach(function (feature) {
-					feature.elements.forEach(function (element) {
-						if (element.type == 'scenario') {
-							if (typeof self.stats[element.result.status] !== 'undefined') {
-								self.stats[element.result.status]++;
-							}
+					if (typeof feature.elements !== 'undefined') {
+						feature.elements.forEach(function (element) {
+							if (element.type == 'scenario') {
+								if (typeof self.stats[element.result.status] !== 'undefined') {
+									self.stats[element.result.status]++;
+								}
 
-							total++;
-						}
-					});
+								total++;
+							}
+						});
+					}
 				});
 
 				self.stats.fail_rate = self.stats.failed / total * 100;
@@ -94,7 +129,7 @@ riot.tag('rt-build-info', '<h2 if="{ !buildId }">Loading build...</h2> <h2 if="{
 	
 });
 
-riot.tag('rt-builds', '<ul class="builds nav nav-pills"> <li each="{ builds }" role="presentation" class="{ active: parent.currentBuildId == _id }"> <a href="#builds/{ _id }">Build { build_number }</a> </li> </ul>', function(opts) {
+riot.tag('rt-builds', '<ul class="builds nav nav-pills"> <li each="{ builds }" role="presentation" class="{ active: parent.currentBuildId == _id }"> <a href="#builds/{ _id }">Build { number }</a> </li> </ul>', function(opts) {
 		this.builds = [];
 	
 });
@@ -103,20 +138,24 @@ riot.tag('rt-dashboard', '<rt-builds></rt-builds> <rt-build-info></rt-build-info
 		var self = this,
 				dash = opts,
 				currentBuildId,
-				currentFeatures;
+				currentFeatures,
+				currentFilter = [];
 
 		self.on('mount', function () {
 			dash.loadBuilds();
 
 			self.tags['rt-build-info'].on('rt:status-click', function (status) {
-				var filter = [ { status: status } ];
+				self.tags['rt-build-filter'].update({ filter: [ { status: status } ] });
+			});
 
-				self.tags['rt-build-filter'].update({ filter: filter });
+			self.tags['rt-build-features'].on('rt:select-tag', function (tag) {
+				self.tags['rt-build-filter'].update({ filter: [ { tag: tag.name } ] });
 			});
 
 			self.tags['rt-build-filter'].on('update', function () {
 				if (currentBuildId && self.tags['rt-build-filter'].filter) {
-					dash.loadFeatures(currentBuildId, self.tags['rt-build-filter'].filter);
+					currentFilter = self.tags['rt-build-filter'].filter;
+					dash.loadFeatures(currentBuildId, currentFilter);
 				}
 			});
 		});
@@ -125,10 +164,9 @@ riot.tag('rt-dashboard', '<rt-builds></rt-builds> <rt-build-info></rt-build-info
 			'load-build': function (id, build) {
 				currentBuildId = id;
 
-
 				self.tags['rt-build-filter'].update({ filter: [] });
 
-				self.tags['rt-build-info'].update({ buildId: id, buildNumber: build.build_number });
+				self.tags['rt-build-info'].update({ buildId: id, buildNumber: build.number });
 				self.tags['rt-builds'].update({ currentBuildId: id });
 			},
 
@@ -146,26 +184,42 @@ riot.tag('rt-dashboard', '<rt-builds></rt-builds> <rt-build-info></rt-build-info
 			},
 
 			'load-build-features-elements': function (elements) {
-				for (var fid in elements) {
-					for (var i = 0; i < currentFeatures.length; i++) {
+				for (var i = 0; i < currentFeatures.length; i++) {
+					for (var fid in elements) {
 						if (currentFeatures[i]._id === fid) {
 							currentFeatures[i].elements = elements[fid];
 						}
 					}
+
+					if (typeof currentFeatures[i].elements === 'undefined') {
+						currentFeatures[i].elements = [];
+					}
 				}
 
 				self.tags['rt-build-info'].update({ features: currentFeatures });
-				self.tags['rt-build-features'].update({ features: currentFeatures });
+				self.tags['rt-build-features'].update({ features: currentFeatures, filter: currentFilter });
 			},
 		});
 	
 });
 
-riot.tag('rt-element', '<h4 class="list-group-item-heading"><span class="keyword">{ keyword }</span>: { name }</h4> <p><span class="label label-{ statuses[result.status] }">{ result.status }</span></p> <div class="steps list-group"> <rt-step each="{ nonBackgroundSteps() }" class="list-group-item list-group-item-{ parent.statuses[result.status] }"></rt-step> </div>', function(opts) {
+riot.tag('rt-element', '<p if="{ tags && tags.length > 0 }"><rt-tag each="{ tags }"></rt-tag></p> <h4 class="list-group-item-heading"> <span class="keyword">{ keyword }</span>: { name } </h4> <p> <span class="label label-{ statuses[result.status] }">{ result.status }</span> <span each="{ links() }"><a target="_blank" href="{ data }" class="octicon octicon-device-desktop"></a></span> </p> <div class="steps list-group"> <rt-step each="{ nonBackgroundSteps() }" class="list-group-item list-group-item-{ parent.statuses[result.status] }"></rt-step> </div>', function(opts) {
 		var self = this;
 
 		self.background = opts.background;
 		self.statuses = { 'passed': 'success', 'skipped': 'warning', 'failed': 'danger' };
+
+		self.embeddings = function () {
+			if (self.steps.length > 0) {
+				return self.steps[self.steps.length - 1].embeddings || [];
+			} else {
+				return [];
+			}
+		};
+
+		self.links = function () {
+			return self.embeddings().filter(function (embed) { return embed.mime_type === 'text/url'; });
+		};
 
 		self.nonBackgroundSteps = function () {
 			if (self.type === 'background' || !self.background) {
@@ -177,7 +231,7 @@ riot.tag('rt-element', '<h4 class="list-group-item-heading"><span class="keyword
 	
 });
 
-riot.tag('rt-feature', '<h4 class="list-group-item-heading"><span class="keyword">{ keyword }</span>: { name }</h4> <div class="scenarios list-group"> <rt-element each="{ elements }" background="{ parent.background }" class="list-group-item"></rt-element> </div>', function(opts) {
+riot.tag('rt-feature', '<p><rt-tag each="{ tags }"></rt-tag></p> <h4 class="list-group-item-heading"><span class="keyword">{ keyword }</span>: { name }</h4> <div class="scenarios list-group"> <rt-element each="{ elements }" background="{ parent.background }" class="list-group-item"></rt-element> </div>', '.tag { margin-right: 0.25em; cursor: pointer; }', function(opts) {
 		var self = this;
 
 		self.elements = [];
@@ -187,9 +241,27 @@ riot.tag('rt-feature', '<h4 class="list-group-item-heading"><span class="keyword
 				self.background = self.elements[0];
 			}
 		});
+
+		self.on('updated', function () {
+			raita.bubble(self, 'rt-tag', 'rt:select-tag');
+		});
 	
 });
 
-riot.tag('rt-step', '<p class="list-group-item-text"> <span class="keyword">{ keyword }</span> <span class="step-name">{ name }</span> </p> <p if="{ match.location }" class="list-group-item-text"> <small>{ match.location }</small> </p>', function(opts) {
+riot.tag('rt-step', '<p class="list-group-item-text"> <span class="keyword">{ keyword }</span> <span class="step-name">{ name }</span> </p> <p if="{ match.location }" class="list-group-item-text"> <small>{ match.location }</small> </p> <pre if="{ result.error_message }" onclick="{ showErrorMessage }" class="list-group-item-text error-message collapsed">{ result.error_message }</pre>', 'rt-step > .error-message { transition: max-height 0.6s ease; max-height: 500em; } rt-step > .error-message.collapsed { cursor: pointer; max-height: 3em; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; }', function(opts) {
+		var self = this;
 
+		self.showErrorMessage = function (e) {
+			$(e.target).removeClass('collapsed');
+		};
+	
+});
+
+riot.tag('rt-tag', '<span class="tag label label-default" onclick="{ click }">{ name }</span>', function(opts) {
+		var self = this;
+
+		self.click = function () {
+			self.trigger('rt:select-tag', { name: self.name, line: self.line });
+		};
+	
 });

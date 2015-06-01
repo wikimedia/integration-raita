@@ -41,15 +41,17 @@
 				var total = 0;
 
 				self.features.forEach(function (feature) {
-					feature.elements.forEach(function (element) {
-						if (element.type == 'scenario') {
-							if (typeof self.stats[element.result.status] !== 'undefined') {
-								self.stats[element.result.status]++;
-							}
+					if (typeof feature.elements !== 'undefined') {
+						feature.elements.forEach(function (element) {
+							if (element.type == 'scenario') {
+								if (typeof self.stats[element.result.status] !== 'undefined') {
+									self.stats[element.result.status]++;
+								}
 
-							total++;
-						}
-					});
+								total++;
+							}
+						});
+					}
 				});
 
 				self.stats.fail_rate = self.stats.failed / total * 100;

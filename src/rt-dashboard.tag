@@ -8,20 +8,24 @@
 		var self = this,
 				dash = opts,
 				currentBuildId,
-				currentFeatures;
+				currentFeatures,
+				currentFilter = [];
 
 		self.on('mount', function () {
 			dash.loadBuilds();
 
 			self.tags['rt-build-info'].on('rt:status-click', function (status) {
-				var filter = [ { status: status } ];
+				self.tags['rt-build-filter'].update({ filter: [ { status: status } ] });
+			});
 
-				self.tags['rt-build-filter'].update({ filter: filter });
+			self.tags['rt-build-features'].on('rt:select-tag', function (tag) {
+				self.tags['rt-build-filter'].update({ filter: [ { tag: tag.name } ] });
 			});
 
 			self.tags['rt-build-filter'].on('update', function () {
 				if (currentBuildId && self.tags['rt-build-filter'].filter) {
-					dash.loadFeatures(currentBuildId, self.tags['rt-build-filter'].filter);
+					currentFilter = self.tags['rt-build-filter'].filter;
+					dash.loadFeatures(currentBuildId, currentFilter);
 				}
 			});
 		});
@@ -30,8 +34,7 @@
 			'load-build': function (id, build) {
 				currentBuildId = id;
 
-				// Updating the filter triggers a reload of features
-				// TODO this is confusing
+				// Updating the filter triggers a reload of features above
 				self.tags['rt-build-filter'].update({ filter: [] });
 
 				self.tags['rt-build-info'].update({ buildId: id, buildNumber: build.number });
@@ -52,16 +55,20 @@
 			},
 
 			'load-build-features-elements': function (elements) {
-				for (var fid in elements) {
-					for (var i = 0; i < currentFeatures.length; i++) {
+				for (var i = 0; i < currentFeatures.length; i++) {
+					for (var fid in elements) {
 						if (currentFeatures[i]._id === fid) {
 							currentFeatures[i].elements = elements[fid];
 						}
 					}
+
+					if (typeof currentFeatures[i].elements === 'undefined') {
+						currentFeatures[i].elements = [];
+					}
 				}
 
 				self.tags['rt-build-info'].update({ features: currentFeatures });
-				self.tags['rt-build-features'].update({ features: currentFeatures });
+				self.tags['rt-build-features'].update({ features: currentFeatures, filter: currentFilter });
 			},
 		});
 	</script>

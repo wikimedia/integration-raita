@@ -1,8 +1,8 @@
 <rt-build-filter>
 	<form onsubmit={ submit }>
-		<div class="input-group">
+		<div class="filter input-group">
 			<span class="input-group-btn">
-				<button class="btn btn-default" type="button" onclick={ clear }><span class="glyphicon glyphicon-filter"></span></button>
+				<button class="btn btn-default" type="button" onclick={ clear }><span class="octicon octicon-circle-slash"></span></button>
 			</span>
 			<input class="form-control" type="text" name="filterString" value="{ filterToString() }"
 				placeholder="e.g. 'status:failed', 'status:skipped', '@some-tag-name'">
@@ -33,7 +33,7 @@
 
 		self.clear = function () {
 			self.filter = [];
-			self.trigger('pl:filter', self.filter);
+			self.trigger('rt:filter', self.filter);
 			self.filterString.focus();
 		};
 
@@ -53,7 +53,7 @@
 
 		self.submit = function () {
 			self.filter = filterFromString(self.filterString.value);
-			self.trigger('pl:filter', self.filter);
+			self.trigger('rt:filter', self.filter);
 		};
 	</script>
 </rt-build-filter>

@@ -24,7 +24,45 @@
 	 */
 	var raita = {};
 
+	/**
+	 * @property
+	 * Default query object that sets a high upper limit for the number of
+	 * returned documents.
+	 */
+	raita.DEFAULT_QUERY = { size: 1000 };
+
+	/**
+	 * @property
+	 * Raita's current version number.
+	 */
 	raita.VERSION = '0.0.0';
+
+	/**
+	 * Helper for bubbling Riot events upward from nested tags.
+	 *
+	 * @param {riot.Tag} tag Tag object
+	 * @param {String} nested Name of nested tag(s) from which to bubble events.
+	 * @param {String} event Name of event to bubble.
+	 */
+	raita.bubble = function (tag, nested, event) {
+		var nestedTag = tag.tags[nested];
+
+		function relayFrom(ntag) {
+			ntag.on(event, function () {
+				tag.trigger.apply(tag, Array.prototype.concat.apply([event], arguments));
+			});
+		}
+
+		if (typeof nestedTag === 'undefined') {
+			return;
+		} else if (nestedTag instanceof Array) {
+			for (var i = 0; i < nestedTag.length; i++) {
+				relayFrom(nestedTag[i]);
+			}
+		} else {
+			relayFrom(nestedTag);
+		}
+	};
 
 	/**
 	 * Sets up the main dashboard UI component and a router that responds to URL
@@ -113,7 +151,9 @@
 		 * @param {Array} [fields=['_source']] Document fields to include in the results.
 		 */
 		db.search = function (type, query, fields) {
+			query = $.extend({}, raita.DEFAULT_QUERY, query);
 			fields = (fields || [ '_source' ]).join(',');
+
 			return this.request('post', this.pathTo(type, '_search') + '?fields=' + fields, query);
 		};
 
@@ -343,9 +383,10 @@
 				featureFilter.bool.should = ufilter.bool.should;
 			}
 
-			this.db.search('feature', { filter: featureFilter }).done(function (data) {
-				self.trigger('load-build-features', buildId, self.db.sourcesOf(data.hits.hits));
-			});
+			this.db.search('feature', { filter: featureFilter })
+				.done(function (data) {
+					self.trigger('load-build-features', buildId, self.db.sourcesOf(data.hits.hits));
+				});
 		};
 
 		/**
@@ -355,16 +396,13 @@
 		dash.loadLatestBuild = function () {
 			var self = this;
 
-			this.db.search('build', {
-				size: 1,
-				sort: [ { _timestamp: { order: 'desc' } } ]
-			})
-			.done(function (data) {
-				if (data.hits.hits.length > 0) {
-					var hit = data.hits.hits[0];
-					self.trigger('load-build', hit._id, hit._source);
-				}
-			});
+			this.db.search('build', { size: 1, sort: [ { _timestamp: { order: 'desc' } } ] })
+				.done(function (data) {
+					if (data.hits.hits.length > 0) {
+						var hit = data.hits.hits[0];
+						self.trigger('load-build', hit._id, hit._source);
+					}
+				});
 		};
 
 		/**

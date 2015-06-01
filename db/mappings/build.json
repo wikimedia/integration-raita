@@ -1,7 +1,7 @@
 {
 	"build": {
 		"properties": {
-			"number": { "type": "integer" },
+			"number": { "type": "string" },
 			"url": { "type": "string", "index": "not_analyzed" },
 			"project.name": { "type": "string", "index": "not_analyzed" },
 			"project.commit": { "type": "string", "index": "not_analyzed" },
