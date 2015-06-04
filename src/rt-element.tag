@@ -5,20 +5,19 @@
 		<span class="keyword">{ keyword }</span>: { name }
 	</h4>
 	<p>
-		<span class="label label-{ statuses[result.status] }">{ result.status }</span>
+		<span class="label label-{ raita.statuses[result.status] }">{ result.status }</span>
 		<span each={ links() }><a target="_blank" href="{ data }" class="octicon octicon-device-desktop"></a></span>
 	</p>
 
 	<div class="steps list-group">
 		<rt-step each={ nonBackgroundSteps() }
-			class="list-group-item list-group-item-{ parent.statuses[result.status] } status-{ result.status }"></rt-step>
+			class="list-group-item list-group-item-{ raita.statuses[result.status] } status-{ result.status }"></rt-step>
 	</div>
 
 	<script>
 		var self = this;
 
 		self.background = opts.background;
-		self.statuses = { 'passed': 'success', 'skipped': 'warning', 'failed': 'danger' };
 
 		self.embeddings = function () {
 			if (self.steps.length > 0) {

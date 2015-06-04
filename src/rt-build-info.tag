@@ -1,6 +1,9 @@
 <rt-build-info>
 	<h2 if={ !buildId }>Loading build...</h2>
-	<h2 if={ buildId }>Build { buildNumber }</h2>
+	<h2 if={ buildId }>Build { build.number } <a href="{ build.url }" class="glyphicon glyphicon-new-window"></a></h2>
+
+	<h4><span class="label label-{ raita.statuses[build.result.status] }">{ build.result.status }</span></h4>
+
 	<div class="progress">
 		<a class="progress-bar progress-bar-striped progress-bar-danger"
 			style="width: { stats.fail_rate }%"
@@ -21,7 +24,11 @@
 	</div>
 
 	<style>
-		rt-build-info .label {
+		rt-build-info .progress {
+			margin-top: 20px;
+		}
+
+		rt-build-info .progress .label {
 			font-size: 100%;
 			background-color: rgba(119, 119, 119, 0.75);
 		}

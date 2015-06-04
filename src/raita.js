@@ -38,6 +38,12 @@
 	raita.VERSION = '0.0.0';
 
 	/**
+	 * @property
+	 * Cucumber status to Bootstrap label mapping.
+	 */
+	raita.statuses = { 'passed': 'success', 'skipped': 'warning', 'failed': 'danger' };
+
+	/**
 	 * Helper for bubbling Riot events upward from nested tags.
 	 *
 	 * @param {riot.Tag} tag Tag object
@@ -308,15 +314,22 @@
 		 * Loads the most recent builds, triggering a
 		 * {@link raita.Dashboard#load-builds} event when they have been loaded.
 		 *
-		 * @param {Object[]} builds Build documents.
+		 * @param {String} project Project name for which to limit the scope.
 		 */
-		dash.loadBuilds = function () {
-			var self = this;
+		dash.loadBuilds = function (project) {
+			var self = this,
+					query = { size: 13, sort: [ { _timestamp: { order: 'desc' } } ] };
 
-			this.db.search('build', { sort: [ { _timestamp: { order: 'desc' } } ] })
+			self.trigger('loading-builds', project);
+
+			if (typeof project !== 'undefined') {
+				query.filter = { term: { "project.repo": project } };
+			}
+
+			this.db.search('build', query)
 				.done(function (data) {
 					if (data.hits.hits.length > 0) {
-						self.trigger('load-builds', self.db.sourcesOf(data.hits.hits));
+						self.trigger('load-builds', self.db.sourcesOf(data.hits.hits), project);
 					}
 				});
 		};
@@ -392,16 +405,39 @@
 		/**
 		 * Loads the latest build, triggering a {@link raita.Dashboard#load-build}
 		 * when it has been loaded.
+		 *
+		 * @param {String} project Optional project by which to filter.
 		 */
-		dash.loadLatestBuild = function () {
-			var self = this;
+		dash.loadLatestBuild = function (project) {
+			var self = this,
+					query = { size: 1, sort: [ { _timestamp: { order: 'desc' } } ] };
 
-			this.db.search('build', { size: 1, sort: [ { _timestamp: { order: 'desc' } } ] })
+			self.trigger('loading-latest-build', project);
+
+			if (typeof project !== 'undefined') {
+				query.filter = { term: { "project.repo": project } };
+			}
+
+			this.db.search('build', query)
 				.done(function (data) {
 					if (data.hits.hits.length > 0) {
 						var hit = data.hits.hits[0];
 						self.trigger('load-build', hit._id, hit._source);
 					}
+				});
+		};
+
+		/**
+		 * Loads projects (inferred by distinct repo URL value in builds), trigging
+		 * a {@link raita.Dashboard#load-projects} when they have been loaded.
+		 */
+		dash.loadProjects = function () {
+			var self = this;
+
+			this.db.search('build', { size: 0, aggs: { projects: { terms: { field: "project.repo" } } } })
+				.done(function (data) {
+					var repos = data.aggregations.projects.buckets.map(function (b) { return b.key; });
+					self.trigger('load-projects', self.projectsFromRepos(repos));
 				});
 		};
 
@@ -413,6 +449,24 @@
 		 */
 		dash.mount = function (selector) {
 			riot.mount(selector, 'rt-dashboard', this);
+		};
+
+		/**
+		 * Generates names and IDs for the given project repos. Each ID will be
+		 * the path portion of the repo URL, with '/' escaped as ';';
+		 *
+		 * @param {String[]} repos Project repo URLs.
+		 */
+		dash.projectsFromRepos = function (repos) {
+			return repos.map(function (url) {
+				var parser = document.createElement('a'),
+						name;
+
+				parser.href = url;
+				name = parser.pathname.substr(1);
+
+				return { repo: url, name: name, id: name.replace(/\//g, ';') };
+			});
 		};
 
 		/**
@@ -441,7 +495,15 @@
 		dash.route = function (collection, id) {
 			switch (collection) {
 				case 'builds':
+					this.loadBuilds();
 					this.loadBuild(id);
+					break;
+				case 'projects':
+					if (arguments.length > 1) {
+						this.loadBuilds(Array.prototype.concat.apply([], arguments).slice(1).join('/'));
+					} else {
+						this.loadBuilds();
+					}
 					break;
 			}
 		};

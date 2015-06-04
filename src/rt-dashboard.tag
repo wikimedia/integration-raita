@@ -1,4 +1,5 @@
 <rt-dashboard>
+	<rt-projects></rt-projects>
 	<rt-builds></rt-builds>
 	<rt-build-info></rt-build-info>
 	<rt-build-filter></rt-build-filter>
@@ -9,10 +10,11 @@
 				dash = opts,
 				currentBuildId,
 				currentFeatures,
-				currentFilter = [];
+				currentFilter = [],
+				currentProject;
 
 		self.on('mount', function () {
-			dash.loadBuilds();
+			dash.loadProjects();
 
 			self.tags['rt-build-info'].on('rt:status-click', function (status) {
 				self.tags['rt-build-filter'].update({ filter: [ { status: status } ] });
@@ -31,18 +33,36 @@
 		});
 
 		dash.subscribe(self, {
+			'load-projects': function (projects) {
+				self.tags['rt-projects'].update({ projects: projects });
+			},
+
 			'load-build': function (id, build) {
 				currentBuildId = id;
 
 				// Updating the filter triggers a reload of features above
 				self.tags['rt-build-filter'].update({ filter: [] });
 
-				self.tags['rt-build-info'].update({ buildId: id, buildNumber: build.number });
+				self.tags['rt-build-info'].update({ buildId: id, build: build });
 				self.tags['rt-builds'].update({ currentBuildId: id });
 			},
 
-			'load-builds': function (builds) {
+			'loading-builds': function (project) {
+				self.tags['rt-projects'].update({ currentProject: project });
+			},
+
+			'loading-latest-build': function (project) {
+				self.tags['rt-projects'].update({ currentProject: project });
+			},
+
+			'load-builds': function (builds, project) {
 				self.tags['rt-builds'].update({ builds: builds });
+
+				if (typeof project !== 'undefined') {
+					dash.loadLatestBuild(project);
+				}
+
+				currentProject = project;
 			},
 
 			'load-build-features': function (buildId, features) {
