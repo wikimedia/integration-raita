@@ -11,7 +11,7 @@
 
 	<div class="steps list-group">
 		<rt-step each={ nonBackgroundSteps() }
-			class="list-group-item list-group-item-{ parent.statuses[result.status] }"></rt-step>
+			class="list-group-item list-group-item-{ parent.statuses[result.status] } status-{ result.status }"></rt-step>
 	</div>
 
 	<script>
@@ -39,5 +39,24 @@
 				return self.steps.slice(self.background.steps.length);
 			}
 		};
+
+		self.expandSteps = function (selector) {
+			self.tags['rt-step'].filter(selector).forEach(function (step) {
+				$(step.root).addClass('expanded');
+			});
+		};
+
+		self.on('updated', function () {
+			if (typeof self.tags['rt-step'] !== 'undefined') {
+				for (var i = 0; i < self.tags['rt-step'].length; i++) {
+					self.tags['rt-step'][i].on('rt:select-step', function (step) {
+						self.expandSteps(function (s) {
+							// Mark other steps in the same status group as expanded
+							return s.result.status == step.result.status;
+						});
+					});
+				}
+			}
+		});
 	</script>
 </rt-element>

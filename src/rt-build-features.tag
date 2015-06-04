@@ -3,6 +3,32 @@
 		<rt-feature each={ nonEmptyFeatures() } class="list-group-item"></rt-feature>
 	</div>
 
+	<style>
+		/* When results are filtered, collapse steps until they are expanded */
+		rt-build-features > .list-group.status-failed rt-step:not(.status-failed):not(.expanded),
+		rt-build-features > .list-group.status-skipped rt-step:not(.status-skipped):not(.expanded) {
+			padding: 0 15px;
+		}
+
+		rt-build-features > .list-group.status-failed rt-step:not(.status-failed):not(.expanded) > :nth-child(1),
+		rt-build-features > .list-group.status-skipped rt-step:not(.status-skipped):not(.expanded) > :nth-child(1) {
+			cursor: pointer;
+		}
+
+		rt-build-features > .list-group.status-failed rt-step:not(.status-failed):not(.expanded) > :nth-child(1):before,
+		rt-build-features > .list-group.status-skipped rt-step:not(.status-skipped):not(.expanded) > :nth-child(1):before {
+			display: block;
+			content: '...';
+		}
+
+		rt-build-features > .list-group.status-failed rt-step:not(.status-failed):not(.expanded) > :nth-child(1) *,
+		rt-build-features > .list-group.status-failed rt-step:not(.status-failed):not(.expanded) > :nth-child(n+2),
+		rt-build-features > .list-group.status-skipped rt-step:not(.status-skipped):not(.expanded) > :nth-child(1) *,
+		rt-build-features > .list-group.status-skipped rt-step:not(.status-skipped):not(.expanded) > :nth-child(n+2) {
+			display: none;
+		}
+	</style>
+
 	<script>
 		var self = this;
 

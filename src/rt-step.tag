@@ -1,5 +1,5 @@
 <rt-step>
-	<p class="list-group-item-text">
+	<p class="list-group-item-text" onclick={ select }>
 		<span class="keyword">{ keyword }</span>
 		<span each={ nameFragments } class={ argument: isArgument }>{ value }</span>
 	</p>
@@ -68,6 +68,10 @@
 
 			return frags;
 		}
+
+		self.select = function () {
+			self.trigger('rt:select-step', self);
+		};
 
 		self.showErrorMessage = function (e) {
 			$(e.target).removeClass('collapsed');

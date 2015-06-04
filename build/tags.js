@@ -1,4 +1,4 @@
-riot.tag('rt-build-features', '<div class="list-group { filterFlags }"> <rt-feature each="{ nonEmptyFeatures() }" class="list-group-item"></rt-feature> </div>', function(opts) {
+riot.tag('rt-build-features', '<div class="list-group { filterFlags }"> <rt-feature each="{ nonEmptyFeatures() }" class="list-group-item"></rt-feature> </div>', '/* When results are filtered, collapse steps until they are expanded */ rt-build-features > .list-group.status-failed rt-step:not(.status-failed):not(.expanded), rt-build-features > .list-group.status-skipped rt-step:not(.status-skipped):not(.expanded) { padding: 0 15px; } rt-build-features > .list-group.status-failed rt-step:not(.status-failed):not(.expanded) > :nth-child(1), rt-build-features > .list-group.status-skipped rt-step:not(.status-skipped):not(.expanded) > :nth-child(1) { cursor: pointer; } rt-build-features > .list-group.status-failed rt-step:not(.status-failed):not(.expanded) > :nth-child(1):before, rt-build-features > .list-group.status-skipped rt-step:not(.status-skipped):not(.expanded) > :nth-child(1):before { display: block; content: \'...\'; } rt-build-features > .list-group.status-failed rt-step:not(.status-failed):not(.expanded) > :nth-child(1) *, rt-build-features > .list-group.status-failed rt-step:not(.status-failed):not(.expanded) > :nth-child(n+2), rt-build-features > .list-group.status-skipped rt-step:not(.status-skipped):not(.expanded) > :nth-child(1) *, rt-build-features > .list-group.status-skipped rt-step:not(.status-skipped):not(.expanded) > :nth-child(n+2) { display: none; }', function(opts) {
 		var self = this;
 
 		self.filters = function () {
@@ -203,7 +203,7 @@ riot.tag('rt-dashboard', '<rt-builds></rt-builds> <rt-build-info></rt-build-info
 	
 });
 
-riot.tag('rt-element', '<p if="{ tags && tags.length > 0 }"><rt-tag each="{ tags }"></rt-tag></p> <h4 class="list-group-item-heading"> <span class="keyword">{ keyword }</span>: { name } </h4> <p> <span class="label label-{ statuses[result.status] }">{ result.status }</span> <span each="{ links() }"><a target="_blank" href="{ data }" class="octicon octicon-device-desktop"></a></span> </p> <div class="steps list-group"> <rt-step each="{ nonBackgroundSteps() }" class="list-group-item list-group-item-{ parent.statuses[result.status] }"></rt-step> </div>', function(opts) {
+riot.tag('rt-element', '<p if="{ tags && tags.length > 0 }"><rt-tag each="{ tags }"></rt-tag></p> <h4 class="list-group-item-heading"> <span class="keyword">{ keyword }</span>: { name } </h4> <p> <span class="label label-{ statuses[result.status] }">{ result.status }</span> <span each="{ links() }"><a target="_blank" href="{ data }" class="octicon octicon-device-desktop"></a></span> </p> <div class="steps list-group"> <rt-step each="{ nonBackgroundSteps() }" class="list-group-item list-group-item-{ parent.statuses[result.status] } status-{ result.status }"></rt-step> </div>', function(opts) {
 		var self = this;
 
 		self.background = opts.background;
@@ -228,6 +228,25 @@ riot.tag('rt-element', '<p if="{ tags && tags.length > 0 }"><rt-tag each="{ tags
 				return self.steps.slice(self.background.steps.length);
 			}
 		};
+
+		self.expandSteps = function (selector) {
+			self.tags['rt-step'].filter(selector).forEach(function (step) {
+				$(step.root).addClass('expanded');
+			});
+		};
+
+		self.on('updated', function () {
+			if (typeof self.tags['rt-step'] !== 'undefined') {
+				for (var i = 0; i < self.tags['rt-step'].length; i++) {
+					self.tags['rt-step'][i].on('rt:select-step', function (step) {
+						self.expandSteps(function (s) {
+
+							return s.result.status == step.result.status;
+						});
+					});
+				}
+			}
+		});
 	
 });
 
@@ -248,7 +267,7 @@ riot.tag('rt-feature', '<p><rt-tag each="{ tags }"></rt-tag></p> <h4 class="list
 	
 });
 
-riot.tag('rt-step', '<p class="list-group-item-text"> <span class="keyword">{ keyword }</span> <span each="{ nameFragments }" class="{ argument: isArgument }">{ value }</span> </p> <p if="{ match.location }" class="list-group-item-text"> <small>{ match.location }</small> </p> <pre if="{ result.error_message }" onclick="{ showErrorMessage }" class="list-group-item-text error-message collapsed">{ result.error_message }</pre>', 'rt-step > .error-message { transition: max-height 0.6s ease; max-height: 500em; } rt-step > .error-message.collapsed { cursor: pointer; max-height: 3em; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; } rt-step .argument { font-weight: bold; }', function(opts) {
+riot.tag('rt-step', '<p class="list-group-item-text" onclick="{ select }"> <span class="keyword">{ keyword }</span> <span each="{ nameFragments }" class="{ argument: isArgument }">{ value }</span> </p> <p if="{ match.location }" class="list-group-item-text"> <small>{ match.location }</small> </p> <pre if="{ result.error_message }" onclick="{ showErrorMessage }" class="list-group-item-text error-message collapsed">{ result.error_message }</pre>', 'rt-step > .error-message { transition: max-height 0.6s ease; max-height: 500em; } rt-step > .error-message.collapsed { cursor: pointer; max-height: 3em; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; } rt-step .argument { font-weight: bold; }', function(opts) {
 		var self = this;
 
 		
@@ -281,6 +300,10 @@ riot.tag('rt-step', '<p class="list-group-item-text"> <span class="keyword">{ ke
 
 			return frags;
 		}
+
+		self.select = function () {
+			self.trigger('rt:select-step', self);
+		};
 
 		self.showErrorMessage = function (e) {
 			$(e.target).removeClass('collapsed');
