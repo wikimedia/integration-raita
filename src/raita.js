@@ -77,10 +77,14 @@
 	 * The element resolved by the given selector will be mounted as an
 	 * `rt-dashboard` tag.
 	 *
+	 * @param {String} selector Selector for resolving root dashboard element.
+	 * @param {String} dbURL URL to the Elasticsearch database.
+	 * @param {Object} linkers Map of functions used to generate project links.
+	 *
 	 * @return {raita.Dashboard}
 	 */
-	raita.dashboard = function (selector, dbURL) {
-		var dash = new raita.Dashboard(dbURL);
+	raita.dashboard = function (selector, dbURL, linkers) {
+		var dash = new raita.Dashboard(dbURL, linkers);
 
 		function router() {
 			dash.route.apply(dash, arguments);
@@ -207,9 +211,11 @@
 	 * Main dashboard controller.
 	 *
 	 * @param {string} dbURL URL to the Elasticsearch index.
+	 * @param {Object} linkers Map of functions used to generate project links.
 	 */
-	raita.Dashboard = function (dbURL) {
+	raita.Dashboard = function (dbURL, linkers) {
 		this.db = new raita.Database(dbURL);
+		$.extend(this.linkers, linkers);
 		riot.observable(this);
 	};
 
@@ -244,6 +250,50 @@
 		 *
 		 * @param {Object[]} elements Feature element documents.
 		 */
+
+		/**
+		 * @property
+		 * Functions used to create project related links to the repo, commit,
+		 * diffs, etc. This can be overridden when instantiating a
+		 * {raita.Dashboard}.
+		 */
+		dash.linkers = {
+			projectPath: function () {
+				var parser = document.createElement('a');
+				parser.href = this.project.repo;
+
+				return parser.pathname.substr(1).replace(/^r\//, '');
+			},
+
+			projectURLComponent: function () {
+				return encodeURIComponent(this.projectPath());
+			},
+
+			commitURL: function () {
+				return 'https://git.wikimedia.org/commit/' +
+					this.projectURLComponent() + '/' + this.project.commit;
+			},
+
+			repoURL: function () {
+				return 'https://gerrit.wikimedia.org/r/p/' + this.projectPath();
+			}
+		};
+
+		/**
+		 * Extends the given build object with functions for creating repo,
+		 * commit, and diff links.
+		 *
+		 * @param {Object, Object[]} build Build(s) retrieved from Elasticsearch.
+		 *
+		 * @return {Object} Object with functions added.
+		 */
+		dash.build = function (build) {
+			var self = this;
+
+			function ext(b) { return $.extend({}, b, self.linkers); }
+
+			return (build instanceof Array) ? build.map(ext) : ext(build);
+		};
 
 		/**
 		 * Compiles user-provided filter expressions into an Elasticsearch filter.
@@ -305,7 +355,7 @@
 			} else {
 				this.db.get('build', id)
 					.done(function (data) {
-						self.trigger('load-build', data._id, data._source);
+						self.trigger('load-build', data._id, self.build(data._source));
 					});
 			}
 		};
@@ -329,7 +379,7 @@
 			this.db.search('build', query)
 				.done(function (data) {
 					if (data.hits.hits.length > 0) {
-						self.trigger('load-builds', self.db.sourcesOf(data.hits.hits), project);
+						self.trigger('load-builds', self.build(self.db.sourcesOf(data.hits.hits)), project);
 					}
 				});
 		};
@@ -422,7 +472,7 @@
 				.done(function (data) {
 					if (data.hits.hits.length > 0) {
 						var hit = data.hits.hits[0];
-						self.trigger('load-build', hit._id, hit._source);
+						self.trigger('load-build', hit._id, self.build(hit._source));
 					}
 				});
 		};
@@ -463,7 +513,7 @@
 						name;
 
 				parser.href = url;
-				name = parser.pathname.substr(1);
+				name = parser.pathname.substr(1).replace(/^r\//, '');
 
 				return { repo: url, name: name, id: name.replace(/\//g, ';') };
 			});
@@ -491,19 +541,18 @@
 		 *
 		 * @param {String} collection Resource type.
 		 * @param {String} id Resource ID.
+		 * @param {String} nested Nested resource type.
+		 * @param {String} nid Nested resource ID.
 		 */
-		dash.route = function (collection, id) {
+		dash.route = function (collection, id, nested, nid) {
 			switch (collection) {
 				case 'builds':
 					this.loadBuilds();
 					this.loadBuild(id);
 					break;
 				case 'projects':
-					if (arguments.length > 1) {
-						this.loadBuilds(Array.prototype.concat.apply([], arguments).slice(1).join('/'));
-					} else {
-						this.loadBuilds();
-					}
+					this.loadBuilds(decodeURIComponent(id));
+					this.loadBuild((nested === 'builds' && nid) || 'latest');
 					break;
 			}
 		};

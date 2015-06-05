@@ -1,8 +1,34 @@
 <rt-build-info>
-	<h2 if={ !buildId }>Loading build...</h2>
-	<h2 if={ buildId }>Build { build.number } <a href="{ build.url }" class="glyphicon glyphicon-new-window"></a></h2>
-
-	<h4><span class="label label-{ raita.statuses[build.result.status] }">{ build.result.status }</span></h4>
+	<div class="build-details panel panel-default">
+		<div class="panel-heading">
+			<h3 if={ !buildId }>Loading build...</h3>
+			<h3 if={ buildId }>Build { build.number } <a href="{ build.url }" class="glyphicon glyphicon-new-window"></a></h3>
+			<h4><span class="label label-{ raita.statuses[build.result.status] }">{ build.result.status }</span></h4>
+		</div>
+		<table class="table">
+			<tr data-toggle="tooltip" title="Repository">
+				<th><span class="octicon octicon-repo"></span></th>
+				<td><a href="{ build.repoURL() }">{ build.project.repo }</a></td></tr>
+			<tr data-toggle="tooltip" title="Branch">
+				<th><span class="octicon octicon-git-branch"></span></th>
+				<td>{ build.project.branch }</td></tr>
+			<tr data-toggle="tooltip" title="Commit">
+				<th><span class="octicon octicon-git-commit"></span></th>
+				<td><a href="{ build.commitURL() }">{ build.project.commit }</a></td></tr>
+			<tr data-toggle="tooltip" title="Environment URL">
+				<th><span class="octicon octicon-cloud-upload"></span></th>
+				<td><a hef="{ build.environment.url }">{ build.environment.url }</a></td></tr>
+			<tr data-toggle="tooltip" title="Browser">
+				<th><span class="octicon octicon-browser"></span></th>
+				<td>{ build.browser.name }</td></tr>
+			<tr data-toggle="tooltip" title="Browser version">
+				<th><span class="octicon octicon-versions"></span></th>
+				<td>{ build.browser.version || '(latest)' }</td></tr>
+			<tr data-toggle="tooltip" title="Platform">
+				<th><span class="octicon octicon-terminal"></span></th>
+				<td>{ build.browser.platform }</td></tr>
+		</table>
+	</div>
 
 	<div class="progress">
 		<a class="progress-bar progress-bar-striped progress-bar-danger"
@@ -24,6 +50,18 @@
 	</div>
 
 	<style>
+		rt-build-info .build-details {
+			margin-top: 20px;
+		}
+
+		rt-build-info .build-details th {
+			width: 1%;
+		}
+
+		rt-build-info .build-details td {
+			width: 99%;
+		}
+
 		rt-build-info .progress {
 			margin-top: 20px;
 		}
@@ -76,5 +114,9 @@
 		});
 
 		self.on('update', recalculate);
+
+		self.on('updated', function () {
+			$('[data-toggle="tooltip"]', self.root).tooltip({ placement: 'left' });
+		});
 	</script>
 </rt-build-info>

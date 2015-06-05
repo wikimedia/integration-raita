@@ -1,4 +1,4 @@
-riot.tag('rt-build-features', '<div class="list-group { filterFlags }"> <rt-feature each="{ nonEmptyFeatures() }" class="list-group-item"></rt-feature> </div>', '/* When results are filtered, collapse steps until they are expanded */ rt-build-features > .list-group.status-failed rt-step:not(.status-failed):not(.expanded), rt-build-features > .list-group.status-skipped rt-step:not(.status-skipped):not(.expanded) { padding: 0 15px; } rt-build-features > .list-group.status-failed rt-step:not(.status-failed):not(.expanded) > :nth-child(1), rt-build-features > .list-group.status-skipped rt-step:not(.status-skipped):not(.expanded) > :nth-child(1) { cursor: pointer; } rt-build-features > .list-group.status-failed rt-step:not(.status-failed):not(.expanded) > :nth-child(1):before, rt-build-features > .list-group.status-skipped rt-step:not(.status-skipped):not(.expanded) > :nth-child(1):before { display: block; content: \'...\'; } rt-build-features > .list-group.status-failed rt-step:not(.status-failed):not(.expanded) > :nth-child(1) *, rt-build-features > .list-group.status-failed rt-step:not(.status-failed):not(.expanded) > :nth-child(n+2), rt-build-features > .list-group.status-skipped rt-step:not(.status-skipped):not(.expanded) > :nth-child(1) *, rt-build-features > .list-group.status-skipped rt-step:not(.status-skipped):not(.expanded) > :nth-child(n+2) { display: none; }', function(opts) {
+riot.tag('rt-build-features', '<div class="list-group { filterFlags }"> <rt-feature each="{ nonEmptyFeatures() }" class="list-group-item"></rt-feature> </div>', 'rt-step { transition: padding 0.5s; } /* When results are filtered, collapse steps until they are expanded */ rt-build-features > .list-group.status-failed rt-step:not(.status-failed):not(.expanded), rt-build-features > .list-group.status-skipped rt-step:not(.status-skipped):not(.expanded) { padding: 0 15px; } rt-build-features > .list-group.status-failed rt-step:not(.status-failed):not(.expanded) > :nth-child(1), rt-build-features > .list-group.status-skipped rt-step:not(.status-skipped):not(.expanded) > :nth-child(1) { cursor: pointer; } rt-build-features > .list-group.status-failed rt-step:not(.status-failed):not(.expanded) > :nth-child(1):before, rt-build-features > .list-group.status-skipped rt-step:not(.status-skipped):not(.expanded) > :nth-child(1):before { display: block; content: \'...\'; } rt-build-features > .list-group.status-failed rt-step:not(.status-failed):not(.expanded) > :nth-child(1) *, rt-build-features > .list-group.status-failed rt-step:not(.status-failed):not(.expanded) > :nth-child(n+2), rt-build-features > .list-group.status-skipped rt-step:not(.status-skipped):not(.expanded) > :nth-child(1) *, rt-build-features > .list-group.status-skipped rt-step:not(.status-skipped):not(.expanded) > :nth-child(n+2) { display: none; }', function(opts) {
 		var self = this;
 
 		self.filters = function () {
@@ -88,7 +88,7 @@ riot.tag('rt-build-filter', '<form onsubmit="{ submit }"> <div class="filter inp
 	
 });
 
-riot.tag('rt-build-info', '<h2 if="{ !buildId }">Loading build...</h2> <h2 if="{ buildId }">Build { build.number } <a href="{ build.url }" class="glyphicon glyphicon-new-window"></a></h2> <h4><span class="label label-{ raita.statuses[build.result.status] }">{ build.result.status }</span></h4> <div class="progress"> <a class="progress-bar progress-bar-striped progress-bar-danger" riot-style="width: { stats.fail_rate }%" onclick="{ failedClicked }"> <span class="label label-default" if="{ stats.failed > 0 }">{ stats.failed } failed</span> </a> <a class="progress-bar progress-bar-striped progress-bar-warning" riot-style="width: { stats.skip_rate }%" onclick="{ skippedClicked }"> <span class="label label-default" if="{ stats.skipped > 0 }">{ stats.skipped } skipped</span> </a> <a class="progress-bar progress-bar-striped progress-bar-success" riot-style="width: { stats.pass_rate }%" onclick="{ passedClicked }"> <span class="label label-default" if="{ stats.passed > 0 }">{ stats.passed } passed</span> </a> </div>', 'rt-build-info .progress { margin-top: 20px; } rt-build-info .progress .label { font-size: 100%; background-color: rgba(119, 119, 119, 0.75); } rt-build-info a { cursor: pointer; }', function(opts) {
+riot.tag('rt-build-info', '<div class="build-details panel panel-default"> <div class="panel-heading"> <h3 if="{ !buildId }">Loading build...</h3> <h3 if="{ buildId }">Build { build.number } <a href="{ build.url }" class="glyphicon glyphicon-new-window"></a></h3> <h4><span class="label label-{ raita.statuses[build.result.status] }">{ build.result.status }</span></h4> </div> <table class="table"> <tr data-toggle="tooltip" title="Repository"> <th><span class="octicon octicon-repo"></span></th> <td><a href="{ build.repoURL() }">{ build.project.repo }</a></td></tr> <tr data-toggle="tooltip" title="Branch"> <th><span class="octicon octicon-git-branch"></span></th> <td>{ build.project.branch }</td></tr> <tr data-toggle="tooltip" title="Commit"> <th><span class="octicon octicon-git-commit"></span></th> <td><a href="{ build.commitURL() }">{ build.project.commit }</a></td></tr> <tr data-toggle="tooltip" title="Environment URL"> <th><span class="octicon octicon-cloud-upload"></span></th> <td><a hef="{ build.environment.url }">{ build.environment.url }</a></td></tr> <tr data-toggle="tooltip" title="Browser"> <th><span class="octicon octicon-browser"></span></th> <td>{ build.browser.name }</td></tr> <tr data-toggle="tooltip" title="Browser version"> <th><span class="octicon octicon-versions"></span></th> <td>{ build.browser.version || \'(latest)\' }</td></tr> <tr data-toggle="tooltip" title="Platform"> <th><span class="octicon octicon-terminal"></span></th> <td>{ build.browser.platform }</td></tr> </table> </div> <div class="progress"> <a class="progress-bar progress-bar-striped progress-bar-danger" riot-style="width: { stats.fail_rate }%" onclick="{ failedClicked }"> <span class="label label-default" if="{ stats.failed > 0 }">{ stats.failed } failed</span> </a> <a class="progress-bar progress-bar-striped progress-bar-warning" riot-style="width: { stats.skip_rate }%" onclick="{ skippedClicked }"> <span class="label label-default" if="{ stats.skipped > 0 }">{ stats.skipped } skipped</span> </a> <a class="progress-bar progress-bar-striped progress-bar-success" riot-style="width: { stats.pass_rate }%" onclick="{ passedClicked }"> <span class="label label-default" if="{ stats.passed > 0 }">{ stats.passed } passed</span> </a> </div>', 'rt-build-info .build-details { margin-top: 20px; } rt-build-info .build-details th { width: 1%; } rt-build-info .build-details td { width: 99%; } rt-build-info .progress { margin-top: 20px; } rt-build-info .progress .label { font-size: 100%; background-color: rgba(119, 119, 119, 0.75); } rt-build-info a { cursor: pointer; }', function(opts) {
 		var self = this;
 
 		function recalculate() {
@@ -126,11 +126,27 @@ riot.tag('rt-build-info', '<h2 if="{ !buildId }">Loading build...</h2> <h2 if="{
 		});
 
 		self.on('update', recalculate);
+
+		self.on('updated', function () {
+			$('[data-toggle="tooltip"]', self.root).tooltip({ placement: 'left' });
+		});
 	
 });
 
-riot.tag('rt-builds', '<ul class="builds nav nav-pills"> <li each="{ builds }" role="presentation" class="{ active: parent.currentBuildId == _id }"> <a href="#builds/{ _id }" class="label label-{ raita.statuses[result.status] }">Build { number }</a> </li> </ul>', 'rt-builds .builds > li { font-size: larger; }', function(opts) {
-		this.builds = [];
+riot.tag('rt-builds', '<ul class="builds nav nav-pills"> <li each="{ builds }" role="presentation" class="{ selected: parent.currentBuildId == _id }"> <a href="{ parent.pathTo(this) }" class="label label-{ raita.statuses[result.status] }">Build { number }</a> </li> </ul>', 'rt-builds .builds > li { font-size: larger; } rt-builds .builds > li.selected > a { padding-bottom: 5px; border-bottom: 5px solid rgba(119, 119, 119, 0.75); }', function(opts) {
+		var self = this;
+
+		self.builds = [];
+
+		self.pathTo = function (build) {
+			var path = 'builds/' + build._id;
+
+			if (typeof self.currentProject !== 'undefined' && build.project.repo == self.currentProject) {
+				return '#projects/' + encodeURIComponent(self.currentProject) + '/' + path;
+			} else {
+				return '#' + path;
+			}
+		};
 	
 });
 
@@ -144,6 +160,7 @@ riot.tag('rt-dashboard', '<rt-projects></rt-projects> <rt-builds></rt-builds> <r
 
 		self.on('mount', function () {
 			dash.loadProjects();
+
 
 			self.tags['rt-build-info'].on('rt:status-click', function (status) {
 				self.tags['rt-build-filter'].update({ filter: [ { status: status } ] });
@@ -161,6 +178,7 @@ riot.tag('rt-dashboard', '<rt-projects></rt-projects> <rt-builds></rt-builds> <r
 			});
 		});
 
+
 		dash.subscribe(self, {
 			'load-projects': function (projects) {
 				self.tags['rt-projects'].update({ projects: projects });
@@ -175,22 +193,11 @@ riot.tag('rt-dashboard', '<rt-projects></rt-projects> <rt-builds></rt-builds> <r
 				self.tags['rt-builds'].update({ currentBuildId: id });
 			},
 
-			'loading-builds': function (project) {
-				self.tags['rt-projects'].update({ currentProject: project });
-			},
-
-			'loading-latest-build': function (project) {
-				self.tags['rt-projects'].update({ currentProject: project });
-			},
-
 			'load-builds': function (builds, project) {
-				self.tags['rt-builds'].update({ builds: builds });
-
-				if (typeof project !== 'undefined') {
-					dash.loadLatestBuild(project);
-				}
-
 				currentProject = project;
+
+				self.tags['rt-builds'].update({ builds: builds, currentProject: currentProject });
+				self.tags['rt-projects'].update({ currentProject: project });
 			},
 
 			'load-build-features': function (buildId, features) {
@@ -285,7 +292,7 @@ riot.tag('rt-feature', '<p><rt-tag each="{ tags }"></rt-tag></p> <h4 class="list
 	
 });
 
-riot.tag('rt-projects', '<ul class="projects nav nav-pills"> <li role="presentation" class="{ active: !currentProject }"> <a href="#builds/latest">All</a> </li> <li each="{ projects }" role="presentation" class="{ active: parent.currentProject === repo }"> <a href="#projects/{ repo }">{ label }</a> </li> </ul>', 'rt-projects > ul.projects.nav { margin-bottom: 10px; }', function(opts) {
+riot.tag('rt-projects', '<ul class="projects nav nav-pills"> <li role="presentation" class="{ active: !currentProject }"> <a href="#builds/latest">All</a> </li> <li each="{ projects }" role="presentation" class="{ active: parent.currentProject === repo }"> <a href="#projects/{ encodeURIComponent(repo) }/builds/latest">{ label }</a> </li> </ul>', 'rt-projects > ul.projects.nav { margin-bottom: 10px; }', function(opts) {
 		var self = this;
 
 		self.projects = [];

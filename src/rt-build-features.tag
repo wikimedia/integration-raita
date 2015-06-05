@@ -4,6 +4,10 @@
 	</div>
 
 	<style>
+		rt-step {
+			transition: padding 0.5s;
+		}
+
 		/* When results are filtered, collapse steps until they are expanded */
 		rt-build-features > .list-group.status-failed rt-step:not(.status-failed):not(.expanded),
 		rt-build-features > .list-group.status-skipped rt-step:not(.status-skipped):not(.expanded) {

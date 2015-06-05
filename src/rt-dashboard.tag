@@ -16,6 +16,8 @@
 		self.on('mount', function () {
 			dash.loadProjects();
 
+			// Listen for downstream events and propagate any updates across other
+			// components
 			self.tags['rt-build-info'].on('rt:status-click', function (status) {
 				self.tags['rt-build-filter'].update({ filter: [ { status: status } ] });
 			});
@@ -32,6 +34,8 @@
 			});
 		});
 
+		// Listen for events coming back from our data store and push the
+		// necessary updates to downstream components
 		dash.subscribe(self, {
 			'load-projects': function (projects) {
 				self.tags['rt-projects'].update({ projects: projects });
@@ -47,22 +51,11 @@
 				self.tags['rt-builds'].update({ currentBuildId: id });
 			},
 
-			'loading-builds': function (project) {
-				self.tags['rt-projects'].update({ currentProject: project });
-			},
-
-			'loading-latest-build': function (project) {
-				self.tags['rt-projects'].update({ currentProject: project });
-			},
-
 			'load-builds': function (builds, project) {
-				self.tags['rt-builds'].update({ builds: builds });
-
-				if (typeof project !== 'undefined') {
-					dash.loadLatestBuild(project);
-				}
-
 				currentProject = project;
+
+				self.tags['rt-builds'].update({ builds: builds, currentProject: currentProject });
+				self.tags['rt-projects'].update({ currentProject: project });
 			},
 
 			'load-build-features': function (buildId, features) {

@@ -4,7 +4,7 @@
 			<a href="#builds/latest">All</a>
 		</li>
 		<li each={ projects } role="presentation" class={ active: parent.currentProject === repo }>
-			<a href="#projects/{ repo }">{ label }</a>
+			<a href="#projects/{ encodeURIComponent(repo) }/builds/latest">{ label }</a>
 		</li>
 	</ul>
 
