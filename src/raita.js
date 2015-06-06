@@ -345,19 +345,15 @@
 		 * Loads the given build, triggering a {@link raita.Dashboard#load-build}
 		 * event when it has been loaded.
 		 *
-		 * @param {String} id Build document ID or 'latest'.
+		 * @param {String} id Build document ID.
 		 */
 		dash.loadBuild = function (id) {
 			var self = this;
 
-			if (id === 'latest') {
-				this.loadLatestBuild();
-			} else {
-				this.db.get('build', id)
-					.done(function (data) {
-						self.trigger('load-build', data._id, self.build(data._source));
-					});
-			}
+			this.db.get('build', id)
+				.done(function (data) {
+					self.trigger('load-build', data._id, self.build(data._source));
+				});
 		};
 
 		/**
@@ -545,14 +541,27 @@
 		 * @param {String} nid Nested resource ID.
 		 */
 		dash.route = function (collection, id, nested, nid) {
+			var self = this;
+
+			function loadBuild(id, project) {
+				if (id === 'latest') {
+					self.loadLatestBuild(project);
+				} else {
+					self.loadBuild(id);
+				}
+			}
+
 			switch (collection) {
 				case 'builds':
-					this.loadBuilds();
-					this.loadBuild(id);
+					self.loadBuilds();
+					loadBuild(id);
+
 					break;
 				case 'projects':
-					this.loadBuilds(decodeURIComponent(id));
-					this.loadBuild((nested === 'builds' && nid) || 'latest');
+					id = decodeURIComponent(id);
+					self.loadBuilds(id);
+					loadBuild((nested === 'builds' && nid) || 'latest', id);
+
 					break;
 			}
 		};
