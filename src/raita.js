@@ -266,12 +266,12 @@
 			},
 
 			projectURLComponent: function () {
-				return encodeURIComponent(this.projectPath());
+				return this.projectPath();
 			},
 
 			commitURL: function () {
-				return 'https://git.wikimedia.org/commit/' +
-					this.projectURLComponent() + '/' + this.project.commit;
+				return 'https://phabricator.wikimedia.org/r/p/' +
+					this.projectURLComponent() + ';browse/;' + this.project.commit;
 			},
 
 			repoURL: function () {

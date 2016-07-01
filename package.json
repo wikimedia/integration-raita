@@ -4,7 +4,7 @@
   "description": "Dashboard for Cucumber test results",
   "repository": {
     "type": "git",
-    "url": "https://git.wikimedia.org/git/integration/raita.git"
+    "url": "https://phabricator.wikimedia.org/diffusion/CIRA/integration-raita.git"
   },
   "scripts": {
     "doc": "jsduck",
